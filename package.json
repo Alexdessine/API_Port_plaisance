@@ -11,5 +11,8 @@
     "express": "~4.16.1",
     "morgan": "~1.9.1",
     "nodemon": "^3.1.11"
+  },
+  "devDependencies": {
+    "env-cmd": "^11.0.0"
   }
 }
