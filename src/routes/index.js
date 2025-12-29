@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
+const { checkJWT } = require('../middlewares/private');
+
 /* GET home page. */
 router.get('/', async (req, res, next) => {
   res.status(200).json({
