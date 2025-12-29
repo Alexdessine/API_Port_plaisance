@@ -1,0 +1,21 @@
+# ======================
+# Node / Express
+# ======================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ======================
+# Varibles d'environnement
+# ======================
+/env/.env
+/env/.env.dev
+/env/.env.prod
+note.txt
+
+# ======================
+# Logs
+# ======================
+logs/
+*.log
