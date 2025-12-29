@@ -1,14 +1,12 @@
 var express = require('express');
 var router = express.Router();
 
-const { checkJWT } = require('../middlewares/private');
 const userRoute = require('../routes/users');
 const authRoute = require('../routes/auth');
-const optionalAuth = require('../middlewares/optionalAuth');
 
+const optionalAuth = require('../middlewares/optionalAuth'); // inject user if any
+const requireAuth = require('../middlewares/requireAuth');
 
-
-/* GET home page. */
 router.get('/', optionalAuth, (req, res) => {
   res.render('index', {
     title: 'Accueil',
@@ -18,16 +16,14 @@ router.get('/', optionalAuth, (req, res) => {
 });
 
 router.use('/auth', authRoute);
-
 router.use('/users', userRoute);
 
-router.get('/dashboard', optionalAuth, (req, res) => {
+router.get('/dashboard', optionalAuth, requireAuth, (req, res) => {
   res.render('dashboard', {
-    title: 'Accueil',
+    title: 'Dashboard',
     isAuthenticated: req.isAuthenticated,
     user: req.user || null
   });
 });
-
 
 module.exports = router;

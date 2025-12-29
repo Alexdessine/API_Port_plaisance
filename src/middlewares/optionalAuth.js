@@ -20,8 +20,8 @@ module.exports = async (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
-        // récupère le user complet depuis Mongo (au moins firstname/email/lastLoginAt)
-        const user = await User.findById(decoded.user._id).select('firstname name email lastLoginAt');
+        // récupère le user complet depuis Mongo (au moins username/email/lastLoginAt)
+        const user = await User.findById(decoded.user._id).select('username email lastLoginAt');
 
         if (!user) {
             req.isAuthenticated = false;
@@ -30,7 +30,7 @@ module.exports = async (req, res, next) => {
 
         req.isAuthenticated = true;
         req.user = user;          // <-- user Mongo complet
-        req.auth = decoded;       // optionnel : garde le decoded si tu veux
+        req.auth = decoded;
         return next();
     } catch (e) {
         req.isAuthenticated = false;
