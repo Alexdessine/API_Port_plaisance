@@ -6,7 +6,9 @@
  * On déclare notre route principale avec pour url de base "/".
  * On ajoute un retour en cas de requête sur une route inexistante (404)
  */
-require('dotenv').config();
+require('dotenv').config({
+    path: './src/config/env/.env'
+});
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');

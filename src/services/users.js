@@ -99,85 +99,46 @@ exports.delete = async (req, res, next) => {
     }
 }
 
-// Ajout chapitre système d'authentification
-// exports.authenticate = async (req, res, next) => {
-//     const { email, password } = req.body;
-
-//     try {
-//         let user = await User.findOne({ email: email }, '-__v -createdAt -updateAt');
-
-//         if (user) {
-//             bcrypt.compare(password, user.password, function (err, response) {
-//                 if (err) {
-//                     throw new Error(err);
-//                 }
-//                 if (response) {
-//                     delete user._doc.password;
-
-//                     const expireIn = 24 * 60 * 60; // 24 heures
-//                     const token = jwt.sign({
-//                         user: user
-//                     },
-//                         process.env.SECRET_KEY,
-//                         {
-//                             expiresIn: expireIn
-//                         });
-
-//                     res.header('Authorization', 'Bearer ' + token);
-
-//                     return res.status(200).json('authenticate_succeed');
-//                 }
-
-//                 return res.status(403).json('wrong_credentials');
-//             });
-//         } else {
-//             return res.status(404).json('user_not_found');
-//         }
-//     } catch (error) {
-//         return res.status(501).json(error);
-//     }
-// }
-
 // Adaptation de l'authentification pour le front avec JWT dans les headers
-// exports.authenticate = async (req, res) => {
-//     const { email, password } = req.body;
+exports.authenticate = async (req, res) => {
+    const { email, password } = req.body;
 
-//     try {
-//         const user = await User.findOne({ email: email });
+    try {
+        const user = await User.findOne({ email: email });
 
-//         if (!user) {
-//             return res.status(404).render('login', { error: 'Utilisateur introuvable' });
-//         }
+        if (!user) {
+            return res.status(404).render('login', { error: 'Utilisateur introuvable' });
+        }
 
-//         bcrypt.compare(password, user.password, function (err, ok) {
-//             if (err) {
-//                 return res.status(500).render('login', { error: 'Erreur serveur' });
-//             }
+        bcrypt.compare(password, user.password, function (err, ok) {
+            if (err) {
+                return res.status(500).render('login', { error: 'Erreur serveur' });
+            }
 
-//             if (!ok) {
-//                 return res.status(403).render('login', { error: 'Identifiants incorrects' });
-//             }
+            if (!ok) {
+                return res.status(403).render('login', { error: 'Identifiants incorrects' });
+            }
 
-//             const loginAt = new Date().toISOString();
+            const loginAt = new Date().toISOString();
 
-//             const expireIn = 24 * 60 * 60; // 24 heures
-//             const token = jwt.sign({ user: { _id: user._id, email: user.email }, loginAt: loginAt }, process.env.SECRET_KEY, {
-//                 expiresIn: expireIn,
-//             });
+            const expireIn = 24 * 60 * 60; // 24 heures
+            const token = jwt.sign({ user: { _id: user._id, email: user.email }, loginAt: loginAt }, process.env.SECRET_KEY, {
+                expiresIn: expireIn,
+            });
 
-//             // Cookie httpOnly (le navigateur le stocke, js ne peut pas le lire)
-//             res.cookie('token', token, {
-//                 httpOnly: true,
-//                 sameSite: 'lax',
-//                 maxAge: expireIn * 1000,
-//             });
+            // Cookie httpOnly (le navigateur le stocke, js ne peut pas le lire)
+            res.cookie('token', token, {
+                httpOnly: true,
+                sameSite: 'lax',
+                maxAge: expireIn * 1000,
+            });
 
-//             return res.redirect('/');
-//         });
-//     } catch (error) {
-//         return res.status(500).render('login', { error: 'Erreur serveur' });
-//     }
-// };
+            return res.redirect('/');
+        });
+    } catch (error) {
+        return res.status(500).render('login', { error: 'Erreur serveur' });
+    }
+};
 
 // exports.logout = async (req, res) => {
 //     try {

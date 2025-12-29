@@ -3,13 +3,13 @@ var router = express.Router();
 
 const service = require('../services/users');
 
-// const private = require('../middlewares/private');
+const private = require('../middlewares/private');
 
 
 // Route pour lire les infos d'un utilisateur
 router.get(
   '/:id', 
-  // private.checkJWT, 
+  private.checkJWT, 
   service.getById
 );
 
@@ -22,18 +22,18 @@ router.put(
 // Route pour mettre à jour un utilisateur
 router.patch(
   '/:id', 
-  // private.checkJWT, 
+  private.checkJWT, 
   service.update
 );
 
 // Route pour supprimer un utilisateur
 router.delete(
   '/:id', 
-  // private.checkJWT, 
+  private.checkJWT, 
   service.delete
 );
 
 // Ajout de la route /authenticate
-// router.post('/authenticate', service.authenticate);
+router.post('/authenticate', service.authenticate);
 
 module.exports = router;
