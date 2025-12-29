@@ -1,0 +1,17 @@
+<form method="post" action="/auth/login">
+    <fieldset>
+        <legend>Connexion</legend><br>
+        <label for="email"> Email</label>
+        <input type="email" name="email" required><br><br>
+        <label for="password"> Mot de passe</label>
+        <input type="password" name="password" required><br><br>
+
+        <input type="submit" value="Se connecter">
+    </fieldset>
+
+    <% if (typeof error !=='undefined' ) { %>
+        <p style="color: red;">
+            <%= error %>
+        </p>
+        <% } %>
+</form>

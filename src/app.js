@@ -37,9 +37,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// const authView = require('./middlewares/auth-view');
+const authView = require('./middlewares/auth-view');
 
-// app.use(authView.injectUserIfAny);
+app.use(authView.injectUserIfAny);
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
