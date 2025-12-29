@@ -17,6 +17,9 @@ const cors = require('cors');
 
 
 const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const catwaysRouter = require('./routes/catways');
+
 const mongodb = require('./config/db/mongo');
 
 const path = require('path');
@@ -44,6 +47,9 @@ app.use(authView.injectUserIfAny);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/', indexRouter);
+
+app.use('/users', usersRouter);
+app.use('/catways', catwaysRouter);
 
 app.use(function (req, res, next) {
     res.status(404).json({ name: 'API', version: '1.0', status: 404, message: 'not_found' });
