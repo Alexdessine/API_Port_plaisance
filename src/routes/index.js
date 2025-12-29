@@ -1,18 +1,29 @@
 var express = require('express');
 var router = express.Router();
 
-const { checkJWT } = require('../middlewares/private');
+const userRoute = require('../routes/users');
+const authRoute = require('../routes/auth');
 
-/* GET home page. */
-router.get('/', async (req, res, next) => {
-  res.status(200).json({
-    name: process.env.APP_NAME,
-    version: '1.0',
-    status: 200,
-    message: 'Bienvenue sur l\'API !'
+const optionalAuth = require('../middlewares/optionalAuth'); // inject user if any
+const requireAuth = require('../middlewares/requireAuth');
+
+router.get('/', optionalAuth, (req, res) => {
+  res.render('index', {
+    title: 'Accueil',
+    isAuthenticated: req.isAuthenticated,
+    user: req.user || null
   });
 });
 
-router.use('/users', require('../routes/users'));
+router.use('/auth', authRoute);
+router.use('/users', userRoute);
+
+router.get('/dashboard', optionalAuth, requireAuth, (req, res) => {
+  res.render('dashboard', {
+    title: 'Dashboard',
+    isAuthenticated: req.isAuthenticated,
+    user: req.user || null
+  });
+});
 
 module.exports = router;

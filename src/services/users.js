@@ -133,30 +133,30 @@ exports.authenticate = async (req, res) => {
                 maxAge: expireIn * 1000,
             });
 
-            return res.redirect('/');
+            return res.redirect('/dashboard');
         });
     } catch (error) {
         return res.status(500).render('login', { error: 'Erreur serveur' });
     }
 };
 
-// exports.logout = async (req, res) => {
-//     try {
-//         const token = req.cookies?.token;
+exports.logout = async (req, res) => {
+    try {
+        const token = req.cookies?.token;
 
-//         if (token) {
-//             const payload = jwt.verify(token, process.env.SECRET_KEY);
+        if (token) {
+            const payload = jwt.verify(token, process.env.SECRET_KEY);
 
-//             // ✅ lastLoginAt = moment où cette session a commencé (loginAt)
-//             await User.updateOne(
-//                 { _id: payload.user._id },
-//                 { $set: { lastLoginAt: payload.loginAt } }
-//             );
-//         }
-//     } catch (e) {
-//         // même si token invalide/expiré : on déconnecte quand même
-//     }
+            // ✅ lastLoginAt = moment où cette session a commencé (loginAt)
+            await User.updateOne(
+                { _id: payload.user._id },
+                { $set: { lastLoginAt: payload.loginAt } }
+            );
+        }
+    } catch (e) {
+        // même si token invalide/expiré : on déconnecte quand même
+    }
 
-//     res.clearCookie('token');
-//     return res.redirect('/');
-// };
+    res.clearCookie('token');
+    return res.redirect('/');
+};
