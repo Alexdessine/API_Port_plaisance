@@ -1,5 +1,6 @@
 // On importe le modèle de données
 const Reservations = require('../models/reservation');
+const Catways = require('../models/catway');
 const mongoose = require('mongoose');
 
 // On exporte le callback afin d'y accéder dans notre gestionnaire de routes
@@ -74,36 +75,41 @@ exports.getById = async (req, res) => {
 
 
 
-// Ici c'est le callback qui servira à ajouter un catways
-exports.add = async (req, res, next) => {
-    const catwayNumber = Number(req.body.catwayNumber);
+// Ici c'est le callback qui servira à ajouter une réservation
+exports.add = async (req, res) => {
+    const catwayNumber = Number(req.params.catwayNumber);
 
     if (Number.isNaN(catwayNumber)) {
-        return res.status(400).json({ message: 'catwayNumber doit être un nombre' });
+        return res.status(400).json({ message: "catwayNumber doit être un nombre" });
     }
 
     const { clientName, boatName, startDate, endDate } = req.body;
 
     if (!clientName || !boatName || !startDate || !endDate) {
-        return res.status(400).json({ message: 'Tous les champs sont obligatoires' });
+        return res.status(400).json({ message: "Tous les champs sont obligatoires" });
     }
 
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        return res.status(400).json({ message: 'Les dates doivent être au format YYYY-MM-DD' });
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+        return res.status(400).json({ message: "Dates invalides (ex: 2025-02-12)" });
     }
 
     if (end < start) {
-        return res.status(400).json({ message: 'La date de fin doit être après la date de début' });
+        return res.status(400).json({ message: "La date de fin doit être après la date de début" });
     }
 
     try {
-        // On vérifie si une réservation est déjà existante
-        // existing.startDate <= newEnd ET existing.endDate >= newStart
+        // 1) vérifier que le catway existe
+        const catway = await Catways.findOne({ catwayNumber });
+        if (!catway) {
+            return res.status(404).json({ message: "Catway introuvable" });
+        }
+
+        // 2) vérifier chevauchement
         const overlap = await Reservations.findOne({
-            catwayNumber, 
+            catwayNumber,
             startDate: { $lte: end },
             endDate: { $gte: start },
         });
@@ -111,26 +117,26 @@ exports.add = async (req, res, next) => {
         if (overlap) {
             return res.status(409).json({
                 message: "Conflit: une réservation existe déjà sur cette période pour ce catway",
-                conflicReservationId: overlap._id,
+                conflictReservationId: overlap._id,
             });
         }
 
+        // 3) créer
         const reservation = await Reservations.create({
             catwayNumber,
             clientName,
             boatName,
-            startDate,
-            endDate,
+            startDate: start,
+            endDate: end,
         });
 
         return res.status(201).json(reservation);
     } catch (error) {
-        console.log('BODY RECU:', req.body);
         return res.status(500).json({
             name: error?.name,
             message: error?.message,
             code: error?.code,
-            keyValue: error?.keyValue
+            keyValue: error?.keyValue,
         });
     }
 };

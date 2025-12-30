@@ -28,7 +28,7 @@ router.get(
 
 // Route pour ajouter une réservation
 router.put(
-  '/', 
+  '/add', 
   service.add
 );
 
