@@ -180,27 +180,14 @@ exports.update = async (req, res) => {
 // Ici c'est le callback qui servira à supprimer un catways
 // Ici c'est le callback qui servira à supprimer un catway par son numéro
 exports.delete = async (req, res) => {
-    const catwayNumber = Number(req.params.catwayNumber);
-
-    if (Number.isNaN(catwayNumber)) {
-        return res.status(400).json({ message: 'catwayNumber doit être un nombre' });
-    }
+    const id = req.params.id;
 
     try {
-        const result = await Catways.deleteOne({ catwayNumber });
-
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ message: 'Catway non trouvée' });
-        }
-
-        // 204 = No Content → pas de body
-        return res.status(204).send();
+        await Reservations.deleteOne({ _id: id });
+        return res.status(200).json('La réservation est bien supprimée.');
     } catch (error) {
-        return res.status(500).json({
-            name: error?.name,
-            message: error?.message,
-            code: error?.code,
-        });
+        console.log(error);
+        return res.status(501).json(error);
     }
 };
 
