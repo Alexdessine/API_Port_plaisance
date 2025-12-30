@@ -5,16 +5,30 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+exports.getAll = async (req, res) => {
+    try {
+        let users = await User.find();
+        return res.status(200).json(users);
+    } catch (error) {
+        console.log('BODY RECU:', req.body);
+        return res.status(500).json({
+            name: error?.name,
+            message: error?.message,
+            code: error?.code,
+            keyValue: error?.keyValue
+        });
+    }
+}
 
 
 // On exporte le callback afin d'y accéder dans notre gestionnaire de routes
 // Ici c'est le callback qui servira à ajouter un user avec son id
-exports.getById = async (req, res) => {
-    const id = req.params.id;
+exports.getByEmail = async (req, res) => {
+    const email = req.params.email;
 
 
     try {
-        let user = await User.findById(id);
+        let user = await User.findOne({email : email});
 
         if (user) {
             return res.status(200).json(user);
@@ -48,50 +62,50 @@ exports.add = async (req, res, next) => {
     } catch (error) {
         console.log('BODY RECU:', req.body);
         return res.status(500).json({
-            name: error?.name,
-            message: error?.message,
-            code: error?.code,
-            keyValue: error?.keyValue
+            message : "Un utilisateur avec cet email existe déjà."
         });
     }
 }
 
 // Ici c'est le callback qui servira à modifier un user avec son id
-exports.update = async (req, res, next) => {
-    const id = req.params.id;
-    const temp = ({
+exports.update = async (req, res) => {
+    const email = decodeURIComponent(req.params.email).trim().toLowerCase();
+
+    const temp = {
         username: req.body.username,
-        email: req.body.email,
-        password: req.body.password
-    });
+        password: req.body.password,
+    };
 
     try {
-        let user = await User.findOne({ _id: id });
+        const user = await User.findOne({ email });
 
-        if (user) {
-            Object.keys(temp).forEach((key) => {
-                if (!!temp[key]) {
-                    user[key] = temp[key];
-                }
-            });
-
-            await user.save();
-            return res.status(200).json(user);
+        if (!user) {
+            return res.status(404).json({ message: "Utilisateur non trouvé" });
         }
 
-        return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        Object.keys(temp).forEach((key) => {
+            if (temp[key] !== undefined && temp[key] !== null && temp[key] !== "") {
+                user[key] = temp[key];
+            }
+        });
+
+        await user.save();
+        return res.status(200).json(user);
     } catch (error) {
-        console.log(error);
-        return res.status(501).json(error);
+        return res.status(500).json({
+            name: error?.name,
+            message: error?.message,
+            code: error?.code,
+        });
     }
-}
+};
 
 // Ici c'est le callback qui servira à supprimer un user avec son id
 exports.delete = async (req, res, next) => {
-    const id = req.params.id;
+    const email = req.params.email;
 
     try {
-        await User.deleteOne({ _id: id });
+        await User.deleteOne({ email });
         return res.status(200).json('delete_ok');
     } catch (error) {
         console.log(error);
