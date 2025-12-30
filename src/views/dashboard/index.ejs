@@ -1,0 +1,84 @@
+<nav>
+    <a href="/">Accueil</a>
+    <a href="/catways">Catways</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Tableau de bord</h1>
+
+<section>
+    <h2>Utilisateur connecté</h2>
+    <p>Nom: <%= user?.username || '-' %>
+    </p>
+    <p>Email: <%= user?.email || '-' %>
+    </p>
+</section>
+
+<section>
+    <h2>Date du jour</h2>
+    <p><time datetime="">
+            <%= today.toLocaleDateString('fr-FR') %>
+        </time></p>
+</section>
+
+<section>
+    <h2>Réservations en cours</h2>
+
+    <% if (typeof error !=='undefined' && error) { %>
+        <p style="color:red;">
+            <%= error %>
+        </p>
+        <% } %>
+
+            <% if (!reservations || reservations.length===0) { %>
+                <p>Aucune réservation en cours.</p>
+                <% } else { %>
+                    <table border="1" cellpadding="6" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Catway</th>
+                                <th>Client</th>
+                                <th>Bateau</th>
+                                <th>Début</th>
+                                <th>Fin</th>
+                                <th colspan="3">options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% reservations.forEach(r=> { %>
+                                <tr>
+                                    <td>
+                                        <%= r.catwayNumber %>
+                                    </td>
+                                    <td>
+                                        <%= r.clientName %>
+                                    </td>
+                                    <td>
+                                        <%= r.boatName %>
+                                    </td>
+                                    <td>
+                                        <%= new Date(r.startDate).toLocaleDateString('fr-FR') %>
+                                    </td>
+                                    <td>
+                                        <%= new Date(r.endDate).toLocaleDateString('fr-FR') %>
+                                    </td>
+                                    <td><a href="/dashboard/show/<%= r._id %>">Voir</a></td>
+                                    <td><a
+                                            href="/dashboard/edit/<%= r._id %>">✏️ Modifier</a>
+                                    </td>
+                                    <td>
+                                        <form action="/dashboard/reservations/<%= r._id %>?_method=DELETE" method="POST" style="display:inline;">
+                                            <button type="submit" onclick="return confirm('Supprimer cette réservation ?')">
+                                                🗑️ Supprimer
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                    <% } %>
+                    <p><a href="/dashboard/add">➕ Ajouter une réservation</a></p>
+
+</section>

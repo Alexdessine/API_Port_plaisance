@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
-const service = require('../services/catways');
-const private = require('../middlewares/private');
+const service = require('../../services/catways');
+const private = require('../../middlewares/private');
 
 /**
  * @swagger
