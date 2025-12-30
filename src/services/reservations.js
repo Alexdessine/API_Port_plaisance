@@ -212,9 +212,7 @@ exports.update = async (req, res) => {
     }
 };
 
-
-// Ici c'est le callback qui servira à supprimer un catways
-// Ici c'est le callback qui servira à supprimer un catway par son numéro
+// Ici c'est le callback qui servira à supprimer une réservation par son numéro
 exports.delete = async (req, res) => {
     const id = req.params.id;
 
