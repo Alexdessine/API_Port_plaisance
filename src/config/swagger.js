@@ -9,7 +9,7 @@ const definition = {
         description: "Documentation de l'API (Catways, Reservations, User, Auth)",
     },
     servers: [
-        { url: "http://localhost:3000", description: "Local server" },
+        { url: "http://localhost:3000/api", description: "Local server" },
     ],
     components: {
         securitySchemes: {

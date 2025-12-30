@@ -16,7 +16,7 @@
             <p>Réservation introuvable.</p>
             <% } else { %>
 
-                <form action="/dashboard/edit/<%= reservation._id %>?_method=PATCH" method="POST">
+                <form action="/dashboard/reservations/<%= reservation._id %>?_method=PATCH" method="POST">
                     <fieldset>
                         <legend>Informations générales</legend>
 
