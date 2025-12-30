@@ -92,7 +92,7 @@ exports.delete = async (req, res, next) => {
 
     try {
         await User.deleteOne({ _id: id });
-        return res.status(204).json('delete_ok');
+        return res.status(200).json('delete_ok');
     } catch (error) {
         console.log(error);
         return res.status(501).json(error);
