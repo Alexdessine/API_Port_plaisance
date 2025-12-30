@@ -1,26 +1,31 @@
-<h1>Bienvenue sur l'application</h1>
+<h1>Port Russell</h1>
 
-<% if (!isAuthenticated) { %>
-    <p style="color: #c0392b">
-        ⚠️ Vous n'êtes pas identifié.
+<p>
+    Application de gestion des catways et des réservations (API + interface EJS).
+</p>
+
+<h2>Connexion</h2>
+
+<% if (error) { %>
+    <p style="color:red;">
+        <%= error %>
     </p>
+    <% } %>
 
-    <p>
-        Veuillez vous connecter pour accéder au tableau de bord.
-    </p>
+        <form method="POST" action="/auth/authenticate">
+            <div>
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" required />
+            </div>
 
-    <a href="/auth/login">Se connecter</a>
-    <% } else { %>
-        <p>
-            Connecté en tant que <strong>
-                <%= user.firstname %>
-                    <%= user.name %>
-            </strong>
-        </p>
-        <p>
-            <small>Dernière connexion le <%= user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('fr-FR')
-                    : "Jamais" %></small>
-        </p>
+            <div>
+                <label for="password">Mot de passe</label>
+                <input id="password" name="password" type="password" required />
+            </div>
 
-        <a href="/dashboard">Accéder au tableau de bord</a> <a href="/auth/logout">Se déconnecter</a>
-        <% } %>
+            <button type="submit">Se connecter</button>
+        </form>
+
+        <hr />
+
+        <a href="/api-docs" target="_blank" rel="noreferrer">📚 Documentation API (Swagger)</a>
