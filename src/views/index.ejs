@@ -1,26 +1,38 @@
-<h1>Bienvenue sur l'application</h1>
+<h1>Port Russell</h1>
 
-<% if (!isAuthenticated) { %>
-    <p style="color: #c0392b">
-        ⚠️ Vous n'êtes pas identifié.
+<p>
+    L’API Port Russell permet de gérer les catways et les réservations d’un port de plaisance.
+    Elle offre des fonctionnalités complètes de gestion des utilisateurs, des catways et des réservations, avec une
+    authentification sécurisée par JWT.
+</p>
+
+<p>
+    L’API est conçue selon une architecture REST, documentée avec Swagger, et peut être utilisée aussi bien par une
+    application web que par des clients externes.
+</p>
+
+<h2>Connexion</h2>
+
+<% if (error) { %>
+    <p style="color:red;">
+        <%= error %>
     </p>
+<% } %>
 
-    <p>
-        Veuillez vous connecter pour accéder au tableau de bord.
-    </p>
+<form method="POST" action="/auth/login">
+    <div>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required />
+    </div>
 
-    <a href="/auth/login">Se connecter</a>
-    <% } else { %>
-        <p>
-            Connecté en tant que <strong>
-                <%= user.firstname %>
-                    <%= user.name %>
-            </strong>
-        </p>
-        <p>
-            <small>Dernière connexion le <%= user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('fr-FR')
-                    : "Jamais" %></small>
-        </p>
+    <div>
+        <label for="password">Mot de passe</label>
+        <input id="password" name="password" type="password" required />
+    </div>
 
-        <a href="/dashboard">Accéder au tableau de bord</a> <a href="/auth/logout">Se déconnecter</a>
-        <% } %>
+    <button type="submit">Se connecter</button>
+</form>
+
+<hr />
+
+<a href="/api-docs" target="_blank" rel="noreferrer">📚 Documentation API (Swagger)</a>

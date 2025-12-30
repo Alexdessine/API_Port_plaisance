@@ -15,6 +15,7 @@ const logger = require('morgan');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
+const expressLayouts = require('express-ejs-layouts');
 
 
 
@@ -55,6 +56,9 @@ app.use(cookieParser());
 const authView = require('./middlewares/auth-view');
 
 app.use(authView.injectUserIfAny);
+
+app.use(expressLayouts);
+app.set('layout', 'layout');
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

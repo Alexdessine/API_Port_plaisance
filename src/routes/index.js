@@ -8,10 +8,14 @@ const optionalAuth = require('../middlewares/optionalAuth'); // inject user if a
 const requireAuth = require('../middlewares/requireAuth');
 
 router.get('/', optionalAuth, (req, res) => {
+  if (req.isAuthenticated) {
+    return res.redirect('/dashboard');
+  }
   res.render('index', {
     title: 'Accueil',
     isAuthenticated: req.isAuthenticated,
-    user: req.user || null
+    user: req.user || null,
+    error: null,
   });
 });
 

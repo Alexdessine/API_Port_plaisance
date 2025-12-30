@@ -4,7 +4,9 @@ const usersService = require('../services/users');
 const optionalAuth = require('../middlewares/optionalAuth');
 
 router.get('/login', (req, res) => {
-    res.render('login')
+    res.render('login', {
+        title: 'login'
+    })
 });
 
 router.post('/login', usersService.authenticate);
