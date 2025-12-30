@@ -66,5 +66,38 @@ router.get('/show/:id', optionalAuth, requireAuth, async (req, res) => {
 });
 
 
+// GET /dashboard/edit/:id -> formulaire d'édition d'une réservation
+router.get('/edit/:id', optionalAuth, requireAuth, async (req, res) => {
+    try {
+        const reservation = await Reservations.findById(req.params.id);
+
+        if (!reservation) {
+            return res.status(404).render('dashboard/edit', {
+                title: 'Modifier la réservation',
+                isAuthenticated: req.isAuthenticated,
+                user: req.user || null,
+                reservation: null,
+                error: 'Réservation introuvable',
+            });
+        }
+
+        return res.render('dashboard/edit', {
+            title: 'Modifier la réservation',
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            reservation,
+            error: null,
+        });
+    } catch (err) {
+        return res.status(500).render('dashboard/edit', {
+            title: 'Modifier la réservation',
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            reservation: null,
+            error: 'Erreur serveur lors du chargement de la réservation',
+        });
+    }
+});
+
 
 module.exports = router;
