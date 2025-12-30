@@ -144,34 +144,70 @@ exports.add = async (req, res) => {
 // Ici c'est le callback qui sert à modifier un catways avec son id
 exports.update = async (req, res) => {
     const catwayNumber = Number(req.params.catwayNumber);
+    const id = req.params.id;
 
     if (Number.isNaN(catwayNumber)) {
-        return res.status(400).json({ message: 'catwayNumber doit être un nombre' });
+        return res.status(400).json({ message: "catwayNumber doit être un nombre" });
     }
 
-    // On n'accepte QUE catwayState
-    const { catwayState } = req.body;
-
-    if (typeof catwayState !== 'string' || catwayState.trim() === '') {
-        return res.status(400).json({ message: 'catwayState est obligatoire' });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "id réservation invalide" });
     }
 
     try {
-        const catway = await Catways.findOne({ catwayNumber });
+        // 1) Charger la réservation ciblée + vérifier qu’elle appartient au bon catway
+        const reservation = await Reservations.findOne({ _id: id, catwayNumber });
 
-        if (!catway) {
-            return res.status(404).json({ message: 'Catway non trouvée' });
+        if (!reservation) {
+            return res.status(404).json({ message: "Réservation non trouvée" });
         }
 
-        catway.catwayState = catwayState;
-        await catway.save();
+        // 2) Construire les nouvelles valeurs (on garde l’existant si non fourni)
+        const nextClientName = req.body.clientName ?? reservation.clientName;
+        const nextBoatName = req.body.boatName ?? reservation.boatName;
 
-        return res.status(200).json(catway);
+        const nextStart = req.body.startDate ? new Date(req.body.startDate) : reservation.startDate;
+        const nextEnd = req.body.endDate ? new Date(req.body.endDate) : reservation.endDate;
+
+        // 3) Valider dates si modifiées (ou juste pour être safe)
+        if (Number.isNaN(nextStart.getTime()) || Number.isNaN(nextEnd.getTime())) {
+            return res.status(400).json({ message: "Dates invalides (ex: 2025-02-12)" });
+        }
+
+        if (nextEnd < nextStart) {
+            return res.status(400).json({ message: "La date de fin doit être après la date de début" });
+        }
+
+        // 4) Vérifier chevauchement avec une AUTRE réservation du même catway
+        const overlap = await Reservations.findOne({
+            catwayNumber,
+            _id: { $ne: reservation._id },        // exclure celle qu'on modifie
+            startDate: { $lte: nextEnd },
+            endDate: { $gte: nextStart },
+        });
+
+        if (overlap) {
+            return res.status(409).json({
+                message: "Conflit: une réservation existe déjà sur cette période pour ce catway",
+                conflictReservationId: overlap._id,
+            });
+        }
+
+        // 5) Appliquer les changements
+        reservation.clientName = nextClientName;
+        reservation.boatName = nextBoatName;
+        reservation.startDate = nextStart;
+        reservation.endDate = nextEnd;
+
+        await reservation.save();
+
+        return res.status(200).json(reservation);
     } catch (error) {
         return res.status(500).json({
             name: error?.name,
             message: error?.message,
             code: error?.code,
+            keyValue: error?.keyValue,
         });
     }
 };
