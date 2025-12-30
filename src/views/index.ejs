@@ -1,7 +1,14 @@
 <h1>Port Russell</h1>
 
 <p>
-    Application de gestion des catways et des réservations (API + interface EJS).
+    L’API Port Russell permet de gérer les catways et les réservations d’un port de plaisance.
+    Elle offre des fonctionnalités complètes de gestion des utilisateurs, des catways et des réservations, avec une
+    authentification sécurisée par JWT.
+</p>
+
+<p>
+    L’API est conçue selon une architecture REST, documentée avec Swagger, et peut être utilisée aussi bien par une
+    application web que par des clients externes.
 </p>
 
 <h2>Connexion</h2>
@@ -10,22 +17,22 @@
     <p style="color:red;">
         <%= error %>
     </p>
-    <% } %>
+<% } %>
 
-        <form method="POST" action="/auth/authenticate">
-            <div>
-                <label for="email">Email</label>
-                <input id="email" name="email" type="email" required />
-            </div>
+<form method="POST" action="/auth/login">
+    <div>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required />
+    </div>
 
-            <div>
-                <label for="password">Mot de passe</label>
-                <input id="password" name="password" type="password" required />
-            </div>
+    <div>
+        <label for="password">Mot de passe</label>
+        <input id="password" name="password" type="password" required />
+    </div>
 
-            <button type="submit">Se connecter</button>
-        </form>
+    <button type="submit">Se connecter</button>
+</form>
 
-        <hr />
+<hr />
 
-        <a href="/api-docs" target="_blank" rel="noreferrer">📚 Documentation API (Swagger)</a>
+<a href="/api-docs" target="_blank" rel="noreferrer">📚 Documentation API (Swagger)</a>
