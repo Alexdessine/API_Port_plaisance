@@ -13,6 +13,10 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
+
+
 
 
 
@@ -29,6 +33,12 @@ const path = require('path');
 mongodb.initClientDbConnection();
 
 const app = express();
+
+app.get('/api-docs.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+});
+
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -54,6 +64,8 @@ app.use('/users', usersRouter);
 app.use('/catways', catwaysRouter);
 app.use('/reservations', reservationsRouter);
 app.use('/catways/:catwayNumber/reservations', reservationsRouter);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 app.use(function (req, res, next) {
