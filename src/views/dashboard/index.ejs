@@ -64,14 +64,13 @@
                                     </td>
                                     <td><a href="/dashboard/show/<%= r._id %>">Voir</a></td>
                                     <td><a
-                                            href="/dashboard/edit/<%= r._id %>">Modifier</a>
+                                            href="/dashboard/edit/<%= r._id %>">✏️ Modifier</a>
                                     </td>
                                     <td>
-                                        <form
-                                            action="/catways/<%= r.catwayNumber %>/reservations/<%= r._id %>?_method=DELETE"
-                                            method="DELETE" style="display:inline;">
-                                            <button type="submit"
-                                                onclick="return confirm('Supprimer cette réservation ?')">Supprimer</button>
+                                        <form action="/dashboard/reservations/<%= r._id %>?_method=DELETE" method="POST" style="display:inline;">
+                                            <button type="submit" onclick="return confirm('Supprimer cette réservation ?')">
+                                                🗑️ Supprimer
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>

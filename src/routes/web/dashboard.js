@@ -207,4 +207,48 @@ router.patch("/reservations/:id", optionalAuth, requireAuth, async (req, res) =>
     }
 });
 
+// DELETE /dashboard/reservations/:id -> supprime une réservation puis redirige vers /dashboard
+router.delete("/reservations/:id", optionalAuth, requireAuth, async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).render("dashboard/index", {
+            title: "Dashboard",
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            today: new Date(),
+            reservations: await Reservations.find().sort({ startDate: 1 }).catch(() => []),
+            error: "ID réservation invalide",
+        });
+    }
+
+    try {
+        const result = await Reservations.deleteOne({ _id: id });
+
+        if (result.deletedCount === 0) {
+            // Rien supprimé -> réservation introuvable
+            return res.status(404).render("dashboard/index", {
+                title: "Dashboard",
+                isAuthenticated: req.isAuthenticated,
+                user: req.user || null,
+                today: new Date(),
+                reservations: await Reservations.find().sort({ startDate: 1 }).catch(() => []),
+                error: "Réservation introuvable",
+            });
+        }
+
+        return res.redirect("/dashboard");
+    } catch (err) {
+        return res.status(500).render("dashboard/index", {
+            title: "Dashboard",
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            today: new Date(),
+            reservations: await Reservations.find().sort({ startDate: 1 }).catch(() => []),
+            error: "Erreur serveur lors de la suppression",
+        });
+    }
+});
+
+
 module.exports = router;

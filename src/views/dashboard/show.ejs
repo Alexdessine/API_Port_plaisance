@@ -52,12 +52,10 @@
 
                     <a href="/dashboard/edit/<%= reservation._id %>">✏️ Modifier</a>
 
-                    <form action="/dashboard/delete/<%= reservation._id %>?_method=DELETE" method="POST"
-                        style="display:inline;">
-                        <button type="submit" onclick="return confirm('Supprimer cette réservation ?')">
-                            🗑️ Supprimer
-                        </button>
+                    <form action="/dashboard/reservations/<%= reservation._id %>?_method=DELETE" method="POST">
+                        <button type="submit" onclick="return confirm('Supprimer cette réservation ?')">🗑️ Supprimer</button>
                     </form>
+                    <a href="/dashboard">Retour</a>
                 </section>
 
                 <% } %>
