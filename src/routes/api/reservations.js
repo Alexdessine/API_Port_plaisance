@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router({ mergeParams: true });
 
-const service = require('../services/reservations');
-const private = require('../middlewares/private');
+const service = require('../../services/reservations');
+const private = require('../../middlewares/private');
 
 /**
  * @swagger

@@ -49,8 +49,8 @@ const definition = {
 module.exports = swaggerJSDoc({
     definition,
     apis: [
-        path.join(__dirname, "../routes/*.js"),
-        path.join(__dirname, "../services/*.js"),
-        path.join(__dirname, "../models/*.js"),
+        path.join(__dirname, "../routes/api/*.js"),
+        path.join(__dirname, "../services/api/*.js"),
+        path.join(__dirname, "../models/api/*.js"),
     ],
 });

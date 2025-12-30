@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const usersService = require('../services/users');
-const optionalAuth = require('../middlewares/optionalAuth');
+const usersService = require('../../services/users');
+const optionalAuth = require('../../middlewares/optionalAuth');
 
 router.get('/login', (req, res) => {
     res.render('login', {

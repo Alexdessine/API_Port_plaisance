@@ -1,7 +1,7 @@
 <nav>
     <a href="/">Accueil</a>
     <a href="/api-docs" target="_blank">Documentation API</a>
-    <a href="/auth-logout">Se déconnecter</a>
+    <a href="/auth/logout">Se déconnecter</a>
 </nav>
 
 <h1>Tableau de bord</h1>
@@ -48,7 +48,10 @@
             <td><%= new Date(r.endDate).toLocaleDateString('fr-FR') %></td>
             <td><a href="/catways/<%= r.catwayNumber %>/reservations/<%= r._id %>">Voir</a></td>
             <td><a href="/catways/<%= r.catwayNumber %>/reservations/<%= r._id %>/edit">Modifier</a></td>
-            <td>Supprimer</td>
+            <td><form action="/catways/<%= r.catwayNumber %>/reservations/<%= r._id %>?_method=DELETE" method="DELETE"
+                style="display:inline;">
+                <button type="submit" onclick="return confirm('Supprimer cette réservation ?')">Supprimer</button>
+            </form></td>
           </tr>
         <% }) %>
       </tbody>
