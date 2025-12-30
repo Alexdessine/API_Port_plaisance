@@ -1,0 +1,60 @@
+<nav>
+    <a href="/">Accueil</a>
+    <a href="/catways">Catways</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Liste de catways</h1>
+
+<section>
+
+    <% if (typeof error !=='undefined' && error) { %>
+        <p style="color:red;">
+            <%= error %>
+        </p>
+        <% } %>
+
+            <% if (!catways || catways.length===0) { %>
+                <p>Aucun catway enregistrés.</p>
+                <% } else { %>
+                    <table border="1" cellpadding="6" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>N° de catway</th>
+                                <th>Type</th>
+                                <th>State</th>
+                                <th colspan="3">options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% catways.forEach(c=> { %>
+                                <tr>
+                                    <td>
+                                        <%= c.catwayNumber %>
+                                    </td>
+                                    <td>
+                                        <%= c.catwayType %>
+                                    </td>
+                                    <td>
+                                        <%= c.catwayState %>
+                                    </td>
+                                    <td><a href="/dashboard/show/<%= c.catwayNumber %>">Voir</a></td>
+                                    <td><a href="/dashboard/edit/<%= c.catwayNumber %>">✏️ Modifier</a>
+                                    </td>
+                                    <td>
+                                        <form action="/dashboard/reservations/<%= c.catwayNumber %>?_method=DELETE" method="POST"
+                                            style="display:inline;">
+                                            <button type="submit"
+                                                onclick="return confirm('Supprimer ce catway ?')">
+                                                🗑️ Supprimer
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                    <% } %>
+                        <p><a href="/dashboard/add">➕ Ajouter un catway</a></p>
+</section>

@@ -4,31 +4,28 @@ const router = express.Router();
 const optionalAuth = require('../../middlewares/optionalAuth');
 const requireAuth = require('../../middlewares/requireAuth');
 
-const Reservations = require('../../models/reservation');
+const Catways = require('../../models/catway');
 const mongoose = require("mongoose");
 
 router.get('/', optionalAuth, requireAuth, async (req, res) => {
     try {
-        const now = new Date();
 
-        const reservations = await Reservations.find().sort({ startDate: 1 });
+        const catways = await Catways.find().sort({ catwayNumber: 1 });
 
-        return res.render('dashboard/index', {
-            title: 'Dashboard',
+        return res.render('catways/index', {
+            title: 'Catways',
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            today: now,
-            reservations,
+            catways,
             error: null,
         });
     } catch (err) {
-        return res.status(500).render('dashboard/index', {
-            title: 'Dashboard',
+        return res.status(500).render('catways/index', {
+            title: 'Catways',
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            today: new Date(),
-            reservations: [],
-            error: "Erreur serveur lors du chargement des réservations",
+            catways: [],
+            error: "Erreur serveur lors du chargement des catways",
         });
     }
 });
