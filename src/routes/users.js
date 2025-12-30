@@ -5,12 +5,19 @@ const service = require('../services/users');
 
 const private = require('../middlewares/private');
 
+// Route pour lire tous les users
+router.get(
+  '/', 
+  private.checkJWT,
+  service.getAll
+);
+
 
 // Route pour lire les infos d'un utilisateur
 router.get(
-  '/:id', 
+  '/:email', 
   private.checkJWT, 
-  service.getById
+  service.getByEmail
 );
 
 // Route pour ajouter un utilisateur
@@ -21,14 +28,14 @@ router.put(
 
 // Route pour mettre à jour un utilisateur
 router.patch(
-  '/:id', 
+  '/:email', 
   private.checkJWT, 
   service.update
 );
 
 // Route pour supprimer un utilisateur
 router.delete(
-  '/:id', 
+  '/:email', 
   private.checkJWT, 
   service.delete
 );
