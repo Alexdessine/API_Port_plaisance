@@ -51,26 +51,22 @@ router.get("/add", optionalAuth, requireAuth, (req, res) => {
 });
 
 // POST /dashboard/reservations -> création d'une réservation
-const Catways = require('../../models/catway'); // adapte le nom/fichier exact
-
 router.post("/reservations", optionalAuth, requireAuth, async (req, res) => {
     const { catwayNumber, clientName, boatName, startDate, endDate } = req.body;
+
     const form = { catwayNumber, clientName, boatName, startDate, endDate };
 
     const num = Number(catwayNumber);
-
-    // ✅ validation nombre
-    if (!Number.isInteger(num) || num <= 0) {
+    if (Number.isNaN(num)) {
         return res.status(400).render("dashboard/add", {
             title: "Ajouter une réservation",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            error: "catwayNumber doit être un entier positif",
+            error: "catwayNumber doit être un nombre",
             form,
         });
     }
 
-    // ✅ champs obligatoires
     if (!clientName || !boatName || !startDate || !endDate) {
         return res.status(400).render("dashboard/add", {
             title: "Ajouter une réservation",
@@ -105,19 +101,7 @@ router.post("/reservations", optionalAuth, requireAuth, async (req, res) => {
     }
 
     try {
-        // ✅ vérifier que le catway existe
-        const catwayExists = await Catways.findOne({ catwayNumber: num }).select("_id");
-        if (!catwayExists) {
-            return res.status(404).render("dashboard/add", {
-                title: "Ajouter une réservation",
-                isAuthenticated: req.isAuthenticated,
-                user: req.user || null,
-                error: `Catway ${num} introuvable`,
-                form,
-            });
-        }
-
-        // ✅ chevauchement
+        // chevauchement si existing.startDate <= newEnd ET existing.endDate >= newStart
         const overlap = await Reservations.findOne({
             catwayNumber: num,
             startDate: { $lte: end },

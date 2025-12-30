@@ -53,9 +53,17 @@ app.use((req, res, next) => {
 const webHomeRouter = require('./routes/web/index');
 const webDashboardRouter = require('./routes/web/dashboard');
 const webAuthRouter = require('./routes/web/auth');
+const webUsersRouter = require('./routes/web/users');
+const webCatwaysRouter = require('./routes/web/catways');
+const webReservationsRouter = require('./routes/web/reservations');
+
 app.use('/auth', webAuthRouter);
 app.use('/', webHomeRouter);
 app.use('/dashboard', webDashboardRouter);
+app.use('/users', webUsersRouter);
+app.use('/catways', webCatwaysRouter);
+app.use('/reservations', webReservationsRouter);
+app.use('/catways/:catwayNumber/reservations', webReservationsRouter);
 
 /* ------------------ API (JSON) ------------------ */
 /* Monte l’API sous /api pour éviter les collisions avec le web */
