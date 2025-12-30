@@ -32,4 +32,39 @@ router.get('/', optionalAuth, requireAuth, async (req, res) => {
     }
 });
 
+// GET /dashboard / show /: id -> affiche le détail d'une réservation
+router.get('/show/:id', optionalAuth, requireAuth, async (req, res) => {
+    try {
+        const reservation = await Reservations.findById(req.params.id);
+
+        if (!reservation) {
+            return res.status(404).render('dashboard/show', {
+                title: 'Détail réservation',
+                isAuthenticated: req.isAuthenticated,
+                user: req.user || null,
+                reservation: null,
+                error: "Réservation introuvable",
+            });
+        }
+
+        return res.render('dashboard/show', {
+            title: 'Détail réservation',
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            reservation,
+            error: null,
+        });
+    } catch (err) {
+        return res.status(500).render('dashboard/show', {
+            title: 'Détail réservation',
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            reservation: null,
+            error: "Erreur serveur lors du chargement de la réservation",
+        });
+    }
+});
+
+
+
 module.exports = router;
