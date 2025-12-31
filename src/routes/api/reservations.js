@@ -126,6 +126,7 @@ router.get(
  */
 router.put(
   '/add',
+  private.checkJWT,
   service.add
 );
 
