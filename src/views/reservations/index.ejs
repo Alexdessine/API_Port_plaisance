@@ -6,25 +6,10 @@
     <a href="/auth/logout">Se déconnecter</a>
 </nav>
 
-<h1>Tableau de bord</h1>
+<h1>Réservations</h1>
 
 <section>
-    <h2>Utilisateur connecté</h2>
-    <p>Nom: <%= user?.username || '-' %>
-    </p>
-    <p>Email: <%= user?.email || '-' %>
-    </p>
-</section>
-
-<section>
-    <h2>Date du jour</h2>
-    <p><time datetime="">
-            <%= today.toLocaleDateString('fr-FR') %>
-        </time></p>
-</section>
-
-<section>
-    <h2>Réservations en cours / à venir</h2>
+    <h2>Réservations des catways</h2>
 
     <% if (typeof error !=='undefined' && error) { %>
         <p style="color:red;">
@@ -43,7 +28,7 @@
                                 <th>Bateau</th>
                                 <th>Début</th>
                                 <th>Fin</th>
-                                <th>options</th>
+                                <th colspan="3">options</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -64,12 +49,26 @@
                                     <td>
                                         <%= new Date(r.endDate).toLocaleDateString('fr-FR') %>
                                     </td>
-
-                                    <td><a href="/reservations/show/<%= r._id %>">Voir</a></td>
+                                    <td>
+                                        <a href="/reservations/show/<%= r._id %>">Voir</a>
+                                    </td>
+                                    <td>
+                                        <a href="/reservations/edit/<%= r._id %>">✏️ Modifier</a>
+                                    </td>
+                                    <td>
+                                        <form action="/reservations/<%= r._id %>?_method=DELETE" method="POST"
+                                            style="display:inline;">
+                                            <button type="submit"
+                                                onclick="return confirm('Supprimer cette réservation ?')">
+                                                🗑️ Supprimer
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 <% }) %>
                         </tbody>
                     </table>
                     <% } %>
-                    <a href="/reservations">Voir les réservations</a>
+
+                        <p><a href="/reservations/add">➕ Ajouter une réservation</a></p>
 </section>

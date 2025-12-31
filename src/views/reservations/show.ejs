@@ -1,0 +1,61 @@
+<nav>
+    <a href="/dashboard">← Retour au dashboard</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Détail de la réservation</h1>
+
+<% if (error) { %>
+    <p style="color:red;">
+        <%= error %>
+    </p>
+    <% } %>
+
+        <% if (!reservation) { %>
+            <p>Aucune réservation à afficher.</p>
+            <% } else { %>
+
+                <section>
+                    <h2>Informations générales</h2>
+
+                    <ul>
+                        <li><strong>Catway :</strong>
+                            <%= reservation.catwayNumber %>
+                        </li>
+                        <li><strong>Client :</strong>
+                            <%= reservation.clientName %>
+                        </li>
+                        <li><strong>Bateau :</strong>
+                            <%= reservation.boatName %>
+                        </li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Période de réservation</h2>
+
+                    <ul>
+                        <li>
+                            <strong>Date de début :</strong>
+                            <%= new Date(reservation.startDate).toLocaleDateString('fr-FR') %>
+                        </li>
+                        <li>
+                            <strong>Date de fin :</strong>
+                            <%= new Date(reservation.endDate).toLocaleDateString('fr-FR') %>
+                        </li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Actions</h2>
+
+                    <a href="/reservations/edit/<%= reservation._id %>">✏️ Modifier</a>
+
+                    <form action="/reservations/<%= reservation._id %>?_method=DELETE" method="POST">
+                        <button type="submit" onclick="return confirm('Supprimer cette réservation ?')">🗑️ Supprimer</button>
+                    </form>
+                    <a href="/reservations">Retour</a>
+                </section>
+
+                <% } %>
