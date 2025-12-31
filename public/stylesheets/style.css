@@ -4,5 +4,13 @@ body {
 }
 
 a {
-  color: #00B7FF;
+  color: #3a2fce;
 }
+
+
+table, th, td{
+  border: solid 1px black;
+  padding: .5em;
+  border-collapse: collapse;
+}
+

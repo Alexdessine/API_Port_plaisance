@@ -11,7 +11,7 @@ router.get('/', optionalAuth, (req, res) => {
     title: 'Accueil',
     isAuthenticated: req.isAuthenticated,
     user: req.user || null,
-    error: null,
+    error: req.query.error || null,
   });
 });
 
