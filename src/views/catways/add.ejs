@@ -1,0 +1,37 @@
+<nav>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Ajouter un catway</h1>
+
+<% if (error) { %>
+    <p style="color:red;">
+        <%= error %>
+    </p>
+    <% } %>
+
+        <form action="/catways" method="POST">
+            <div>
+                <label>Catway Number</label><br />
+                <input type="number" name="catwayNumber" min="1" value="<%= form?.catwayNumber ?? '' %>" required />
+            </div>
+
+            <div>
+                <label>Type de catway</label><br />
+                <select name="catwayType" required>
+                    <option value="" <%=!form?.catwayType ? 'selected' : '' %>>-- Choisir --</option>
+                    <option value="long" <%=form?.catwayType==='long' ? 'selected' : '' %>>long</option>
+                    <option value="short" <%=form?.catwayType==='short' ? 'selected' : '' %>>short</option>
+                </select>
+            </div>
+
+            <div>
+                <label>État du catway</label><br />
+                <input type="text" name="catwayState" value="<%= form?.catwayState ?? '' %>" required />
+            </div>
+
+            <button type="submit">Créer</button>
+            <a href="/catways">Annuler</a>
+        </form>

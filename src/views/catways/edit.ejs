@@ -1,0 +1,45 @@
+<nav>
+    <a href="/dashboard">← Retour au dashboard</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Modifier un catway</h1>
+
+<% if (error) { %>
+    <p style="color:red;">
+        <%= error %>
+    </p>
+    <% } %>
+
+        <% if (!catway) { %>
+            <p>Catway introuvable.</p>
+            <% } else { %>
+
+                <form action="/catways/edit/<%= catway.catwayNumber %>?_method=PATCH" method="POST">
+                    <fieldset>
+                        <legend>Informations générales</legend>
+
+                        <p>
+                            <label>Catway :</label><br>
+                            <input type="number" value="<%= catway.catwayNumber %>" disabled>
+                        </p>
+
+                        <p>
+                            <label for="catwayType">Type de catway</label><br>
+                            <input type="text" id="catwayType" name="catwayType" value="<%= catway.catwayType %>"
+                                disabled>
+                        </p>
+
+                        <p>
+                            <label for="catwayState">Etat du catway</label><br>
+                            <input type="text" id="catwayState" name="catwayState" value="<%= catway.catwayState %>"
+                                required>
+                        </p>
+                    </fieldset>
+
+                    <button type="submit">💾 Enregistrer les modifications</button>
+                    <a href="/catways/show/<%= catway.catwayNumber %>">Annuler</a>
+                </form>
+
+                <% } %>
