@@ -1,0 +1,10 @@
+[
+    {
+        "username": "admin",
+        "email": "admin@port-russel.test",
+        "password": "$2b$10$zMkHlBzmpOqaUqeTFyL5keK8AezT3YfzK0LMx600i56vWfgcn8ZeO",
+        "lastLoginAt": "2025-12-31T14:02:37.205Z",
+        "createdAt": "2025-12-31T14:02:37.206Z",
+        "updatedAt": "2025-12-31T14:02:37.206Z"
+    }
+]
