@@ -36,6 +36,9 @@ app.use(methodOverride('_method'));
 const authView = require('./middlewares/auth-view');
 app.use(authView.injectUserIfAny);
 
+/* ------------------ CSS ------------------- */
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
 /* ------------------ Web (EJS) ------------------ */
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -66,25 +69,25 @@ app.use('/reservations', webReservationsRouter);
 app.use('/catways/:catwayNumber/reservations', webReservationsRouter);
 
 /* ------------------ API (JSON) ------------------ */
-/* Monte l’API sous /api pour éviter les collisions avec le web */
+/* Monter l’API sous /api pour éviter les collisions avec le web */
 const usersRouter = require('./routes/api/users');
 const catwaysRouter = require('./routes/api/catways');
 const reservationsRouter = require('./routes/api/reservations');
-const authRouter = require('./routes/api/auth'); // si tu l'as bien séparé
+const authRouter = require('./routes/api/auth');
 
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/catways', catwaysRouter);
 
-/* Si ton reservationsRouter est fait pour mergeParams + catwayNumber */
+/* reservationsRouter est fait pour mergeParams + catwayNumber */
 app.use('/api/catways/:catwayNumber/reservations', reservationsRouter);
 
-/* Si tu veux aussi une liste globale */
+/* Afficher une liste globale */
 app.use('/api/reservations', reservationsRouter);
 
 /* ------------------ 404 ------------------ */
 app.use((req, res) => {
-    // Si c'est une route API => JSON, sinon une page web simple (au choix)
+    // Si c'est une route API => JSON, sinon une page web simple
     if (req.path.startsWith('/api') || req.path.startsWith('/api-docs')) {
         return res.status(404).json({ name: 'API', version: '1.0', status: 404, message: 'not_found' });
     }
