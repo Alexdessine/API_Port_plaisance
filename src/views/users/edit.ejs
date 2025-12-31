@@ -1,0 +1,45 @@
+<nav>
+    <a href="/dashboard">← Retour au dashboard</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Modifier un utilisateur</h1>
+
+<% if (error) { %>
+    <p style="color:red;">
+        <%= error %>
+    </p>
+    <% } %>
+
+        <% if (!userData) { %>
+            <p>Utilisateur introuvable.</p>
+            <% } else { %>
+
+                <form action="/users/<%= userData.email %>?_method=PUT" method="POST">
+                    <fieldset>
+                        <legend>Informations générales</legend>
+
+                        <p>
+                            <label>Email :</label><br>
+                            <input type="email" value="<%= userData.email %>" disabled>
+                        </p>
+
+                        <p>
+                            <label for="username">Nom d'utilisateur</label><br>
+                            <input type="text" id="username" name="username" value="<%= userData.username || '' %>"
+                                required>
+                        </p>
+
+                        <p>
+                            <label for="password">Nouveau mot de passe (optionnel)</label><br>
+                            <input type="password" id="password" name="password"
+                                placeholder="Laisser vide pour ne pas changer">
+                        </p>
+                    </fieldset>
+
+                    <button type="submit">💾 Enregistrer les modifications</button>
+                    <a href="/users/<%= userData.email %>">Annuler</a>
+                </form>
+
+                <% } %>
