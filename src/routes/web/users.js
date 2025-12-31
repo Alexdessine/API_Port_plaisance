@@ -4,14 +4,14 @@ const router = express.Router();
 const optionalAuth = require("../../middlewares/optionalAuth");
 const requireAuth = require("../../middlewares/requireAuth");
 
-const Users = require("../../models/user"); // <-- ajuste le chemin/nom si besoin
+const Users = require("../../models/user");
 const bcrypt = require("bcrypt");
 
 // petite aide: validation email (simple)
 function isValidEmail(email) {
     if (typeof email !== "string") return false;
     const e = email.trim().toLowerCase();
-    // regex simple, suffisante pour un devoir (sans prétendre être parfaite)
+    // regex simple
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 }
 
@@ -114,7 +114,6 @@ router.get("/:email", optionalAuth, requireAuth, async (req, res) => {
 
 // POST /users/ -> création d'un user
 router.post("/", optionalAuth, requireAuth, async (req, res) => {
-    // adapte ces champs à TON schéma
     const { username, email, password } = req.body;
     const form = { username: username || "", email: email || "" };
 
@@ -156,7 +155,7 @@ router.post("/", optionalAuth, requireAuth, async (req, res) => {
         const created = await Users.create({
             username: username.trim(),
             email: normalizedEmail,
-            password: hashed, // adapte si ton champ s'appelle autrement
+            password: hashed,
         });
 
         return res.redirect(`/users/${created.email}`);
@@ -202,7 +201,7 @@ router.put("/:email", optionalAuth, requireAuth, async (req, res) => {
     const password =
         typeof req.body.password === "string" ? req.body.password : "";
 
-    // username obligatoire (si tu veux le rendre optionnel, dis-le et je t'adapte)
+    // username obligatoire
     if (!username) {
         const userData = await Users.findOne({ email }).catch(() => null);
         return res.status(400).render("users/edit", {

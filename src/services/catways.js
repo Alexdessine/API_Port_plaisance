@@ -22,7 +22,7 @@ exports.getAll = async (req, res) => {
 
 // Ici c'est le callback qui servira à visualiser un catways avec son ID
 exports.getById = async (req, res) => {
-    const catwayNumber = Number(req.params.catwayNumber); // ou req.params.catwayNumber si ta route s'appelle comme ça
+    const catwayNumber = Number(req.params.catwayNumber);
 
     if (Number.isNaN(catwayNumber)) {
         return res.status(400).json({ message: "catwayNumber invalide" });
@@ -121,7 +121,6 @@ exports.delete = async (req, res) => {
             return res.status(404).json({ message: 'Catway non trouvée' });
         }
 
-        // 204 = No Content → pas de body
         return res.status(204).send();
     } catch (error) {
         return res.status(500).json({
