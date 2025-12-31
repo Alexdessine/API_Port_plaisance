@@ -1,0 +1,48 @@
+<nav>
+    <a href="/dashboard">← Retour au dashboard</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Détail du catway</h1>
+
+<% if (error) { %>
+    <p style="color:red;">
+        <%= error %>
+    </p>
+    <% } %>
+
+        <% if (!catways) { %>
+            <p>Aucun catway à afficher.</p>
+            <% } else { %>
+
+                <section>
+                    <h2>Informations générales</h2>
+
+                    <ul>
+                        <li><strong>Catway :</strong>
+                            <%= catways.catwayNumber %>
+                        </li>
+                        <li><strong>Type :</strong>
+                            <%= catways.catwayType %>
+                        </li>
+                        <li><strong>Etat :</strong>
+                            <%= catways.catwayState %>
+                        </li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Actions</h2>
+
+                    <a href="/catways/edit/<%= catways.catwayNumber %>">✏️ Modifier</a>
+
+                    <form action="/catways/delete/<%= catways.catwayNumber %>?_method=DELETE" method="POST" style="display:inline;">
+                        <button type="submit" onclick="return confirm('Supprimer ce catway ?')">
+                            🗑️ Supprimer
+                        </button>
+                    </form>
+                    <a href="/catways">Retour</a>
+                </section>
+
+                <% } %>

@@ -30,103 +30,75 @@ router.get('/', optionalAuth, requireAuth, async (req, res) => {
     }
 });
 
-// GET /dashboard/add -> formulaire d'ajout d'une réservation
+// GET /catways/add -> formulaire d'ajout
 router.get("/add", optionalAuth, requireAuth, (req, res) => {
-    return res.render("dashboard/add", {
-        title: "Ajouter une réservation",
+    return res.render("catways/add", {
+        title: "Ajouter un catway",
         isAuthenticated: req.isAuthenticated,
         user: req.user || null,
         error: null,
-        form: {
-            catwayNumber: "",
-            clientName: "",
-            boatName: "",
-            startDate: "",
-            endDate: "",
-        },
+        form: { catwayNumber: "", catwayType: "", catwayState: "" },
     });
 });
 
-// POST /dashboard/reservations -> création d'une réservation
-router.post("/reservations", optionalAuth, requireAuth, async (req, res) => {
-    const { catwayNumber, clientName, boatName, startDate, endDate } = req.body;
-
-    const form = { catwayNumber, clientName, boatName, startDate, endDate };
+// POST /catways -> création
+router.post("/", optionalAuth, requireAuth, async (req, res) => {
+    const { catwayNumber, catwayType, catwayState } = req.body;
+    const form = { catwayNumber, catwayType, catwayState };
 
     const num = Number(catwayNumber);
-    if (Number.isNaN(num)) {
-        return res.status(400).render("dashboard/add", {
-            title: "Ajouter une réservation",
+    if (Number.isNaN(num) || num <= 0) {
+        return res.status(400).render("catways/add", {
+            title: "Ajouter un catway",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            error: "catwayNumber doit être un nombre",
+            error: "catwayNumber doit être un nombre positif",
             form,
         });
     }
 
-    if (!clientName || !boatName || !startDate || !endDate) {
-        return res.status(400).render("dashboard/add", {
-            title: "Ajouter une réservation",
+    if (!catwayType || !["long", "short"].includes(catwayType)) {
+        return res.status(400).render("catways/add", {
+            title: "Ajouter un catway",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            error: "Tous les champs sont obligatoires",
+            error: "catwayType doit être 'long' ou 'short'",
             form,
         });
     }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-        return res.status(400).render("dashboard/add", {
-            title: "Ajouter une réservation",
+    if (!catwayState || typeof catwayState !== "string" || catwayState.trim() === "") {
+        return res.status(400).render("catways/add", {
+            title: "Ajouter un catway",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            error: "Dates invalides (ex: 2025-02-12)",
-            form,
-        });
-    }
-
-    if (end < start) {
-        return res.status(400).render("dashboard/add", {
-            title: "Ajouter une réservation",
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            error: "La date de fin doit être après la date de début",
+            error: "catwayState est obligatoire",
             form,
         });
     }
 
     try {
-        // chevauchement si existing.startDate <= newEnd ET existing.endDate >= newStart
-        const overlap = await Reservations.findOne({
+        const created = await Catways.create({
             catwayNumber: num,
-            startDate: { $lte: end },
-            endDate: { $gte: start },
+            catwayType,
+            catwayState: catwayState.trim(),
         });
 
-        if (overlap) {
-            return res.status(409).render("dashboard/add", {
-                title: "Ajouter une réservation",
+        return res.redirect(`/catways/show/${created.catwayNumber}`);
+    } catch (err) {
+        // exemple : duplicate key error si catwayNumber est unique
+        if (err?.code === 11000) {
+            return res.status(409).render("catways/add", {
+                title: "Ajouter un catway",
                 isAuthenticated: req.isAuthenticated,
                 user: req.user || null,
-                error: "Conflit : une réservation existe déjà sur cette période pour ce catway",
+                error: "Ce catwayNumber existe déjà",
                 form,
             });
         }
 
-        const created = await Reservations.create({
-            catwayNumber: num,
-            clientName,
-            boatName,
-            startDate: start,
-            endDate: end,
-        });
-
-        return res.redirect(`/dashboard/show/${created._id}`);
-    } catch (err) {
-        return res.status(500).render("dashboard/add", {
-            title: "Ajouter une réservation",
+        return res.status(500).render("catways/add", {
+            title: "Ajouter un catway",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
             error: "Erreur serveur lors de la création",
@@ -135,223 +107,195 @@ router.post("/reservations", optionalAuth, requireAuth, async (req, res) => {
     }
 });
 
-
-// GET /dashboard / show /: id -> affiche le détail d'une réservation
-router.get('/show/:id', optionalAuth, requireAuth, async (req, res) => {
+// GET /catways / show /: id -> affiche le détail d'une catway
+router.get('/show/:catwayNumber', optionalAuth, requireAuth, async (req, res) => {
     try {
-        const reservation = await Reservations.findById(req.params.id);
+        const catwayNumber = Number(req.params.catwayNumber);
 
-        if (!reservation) {
-            return res.status(404).render('dashboard/show', {
-                title: 'Détail réservation',
+        if (Number.isNaN(catwayNumber)) {
+            return res.status(400).render('catways/show', {
+                title: 'Détail du catway',
                 isAuthenticated: req.isAuthenticated,
                 user: req.user || null,
-                reservation: null,
-                error: "Réservation introuvable",
+                catways: null,
+                error: "catwayNumber invalide (doit être un nombre)",
             });
         }
 
-        return res.render('dashboard/show', {
-            title: 'Détail réservation',
+        const catways = await Catways.findOne({ catwayNumber });
+
+        if (!catways) {
+            return res.status(404).render('catways/show', {
+                title: 'Détail du catway',
+                isAuthenticated: req.isAuthenticated,
+                user: req.user || null,
+                catways: null,
+                error: "Catway introuvable",
+            });
+        }
+
+        return res.render('catways/show', {
+            title: 'Détail du catway',
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            reservation,
+            catways,
+            error: null,
+        });
+
+    } catch (err) {
+        return res.status(500).render('catways/show', {
+            title: 'Détail du catway',
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            catways: null,
+            error: "Erreur serveur lors du chargement du catway",
+        });
+    }
+});
+
+// GET /catways/edit/:id -> formulaire d'édition d'un catway
+router.get('/edit/:catwayNumber', optionalAuth, requireAuth, async (req, res) => {
+    const catwayNumber = Number(req.params.catwayNumber);
+
+    if (Number.isNaN(catwayNumber)) {
+        return res.status(400).render('catways/edit', {
+            title: 'Modifier le catway',
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            catway: null,
+            error: 'catwayNumber invalide (doit être un nombre)',
+        });
+    }
+
+    try {
+        const catway = await Catways.findOne({ catwayNumber });
+
+        if (!catway) {
+            return res.status(404).render('catways/edit', {
+                title: 'Modifier le catway',
+                isAuthenticated: req.isAuthenticated,
+                user: req.user || null,
+                catway: null,
+                error: 'Catway introuvable',
+            });
+        }
+
+        return res.render('catways/edit', {
+            title: 'Modifier le catway',
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            catway,
             error: null,
         });
     } catch (err) {
-        return res.status(500).render('dashboard/show', {
-            title: 'Détail réservation',
+        return res.status(500).render('catways/edit', {
+            title: 'Modifier le catway',
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            reservation: null,
-            error: "Erreur serveur lors du chargement de la réservation",
+            catway: null,
+            error: 'Erreur serveur lors du chargement du catway',
         });
     }
 });
 
 
-// GET /dashboard/edit/:id -> formulaire d'édition d'une réservation
-router.get('/edit/:id', optionalAuth, requireAuth, async (req, res) => {
-    try {
-        const reservation = await Reservations.findById(req.params.id);
+// GET /catways/edit/:id -> envoie du formulaire formulaire d'édition d'un catway
+router.patch("/edit/:catwayNumber", optionalAuth, requireAuth, async (req, res) => {
+    const catwayNumber = Number(req.params.catwayNumber);
 
-        if (!reservation) {
-            return res.status(404).render('dashboard/edit', {
-                title: 'Modifier la réservation',
-                isAuthenticated: req.isAuthenticated,
-                user: req.user || null,
-                reservation: null,
-                error: 'Réservation introuvable',
-            });
-        }
-
-        return res.render('dashboard/edit', {
-            title: 'Modifier la réservation',
+    if (Number.isNaN(catwayNumber)) {
+        return res.status(400).render("catways/edit", {
+            title: "Modifier catway",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            reservation,
-            error: null,
-        });
-    } catch (err) {
-        return res.status(500).render('dashboard/edit', {
-            title: 'Modifier la réservation',
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            reservation: null,
-            error: 'Erreur serveur lors du chargement de la réservation',
-        });
-    }
-});
-
-// GET /dashboard/edit/:id -> envoie du formulaire formulaire d'édition d'une réservation
-router.patch("/reservations/:id", optionalAuth, requireAuth, async (req, res) => {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).render("dashboard/edit", {
-            title: "Modifier réservation",
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            reservation: null,
-            error: "ID réservation invalide",
+            catway: null,
+            error: "catwayNumber doit être un nombre",
         });
     }
 
-    // champs autorisés à la modification
-    const { clientName, boatName, startDate, endDate } = req.body;
+    // seul champ modifiable
+    const { catwayState } = req.body;
 
-    if (!clientName || !boatName || !startDate || !endDate) {
-        // On recharge la réservation pour ré-afficher le formulaire
-        const reservation = await Reservations.findById(id).catch(() => null);
-        return res.status(400).render("dashboard/edit", {
-            title: "Modifier réservation",
+    if (!catwayState || typeof catwayState !== "string" || catwayState.trim() === "") {
+        const catway = await Catways.findOne({ catwayNumber }).catch(() => null);
+        return res.status(400).render("catways/edit", {
+            title: "Modifier catway",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            reservation,
-            error: "Tous les champs sont obligatoires",
-        });
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-        const reservation = await Reservations.findById(id).catch(() => null);
-        return res.status(400).render("dashboard/edit", {
-            title: "Modifier réservation",
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            reservation,
-            error: "Dates invalides (ex: 2025-02-12)",
-        });
-    }
-
-    if (end < start) {
-        const reservation = await Reservations.findById(id).catch(() => null);
-        return res.status(400).render("dashboard/edit", {
-            title: "Modifier réservation",
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            reservation,
-            error: "La date de fin doit être après la date de début",
+            catway,
+            error: "catwayState est obligatoire",
         });
     }
 
     try {
-        // 1) récupérer la réservation actuelle (pour connaître catwayNumber)
-        const current = await Reservations.findById(id);
-        if (!current) {
-            return res.status(404).render("dashboard/edit", {
-                title: "Modifier réservation",
+        const catway = await Catways.findOne({ catwayNumber });
+
+        if (!catway) {
+            return res.status(404).render("catways/edit", {
+                title: "Modifier catway",
                 isAuthenticated: req.isAuthenticated,
                 user: req.user || null,
-                reservation: null,
-                error: "Réservation introuvable",
+                catway: null,
+                error: "Catway introuvable",
             });
         }
 
-        // 2) vérifier chevauchement sur le même catway, en excluant la réservation courante
-        const overlap = await Reservations.findOne({
-            _id: { $ne: current._id },
-            catwayNumber: current.catwayNumber,
-            startDate: { $lte: end },
-            endDate: { $gte: start },
-        });
+        catway.catwayState = catwayState.trim();
+        await catway.save();
 
-        if (overlap) {
-            return res.status(409).render("dashboard/edit", {
-                title: "Modifier réservation",
-                isAuthenticated: req.isAuthenticated,
-                user: req.user || null,
-                reservation: current,
-                error: "Conflit : une autre réservation existe déjà sur cette période pour ce catway",
-            });
-        }
-
-        // 3) appliquer update
-        current.clientName = clientName;
-        current.boatName = boatName;
-        current.startDate = start;
-        current.endDate = end;
-
-        await current.save();
-
-        // 4) redirection vers la page show (à adapter selon ton routing)
-        return res.redirect(`/dashboard/show/${current._id}`);
+        // redirige vers ta page show
+        return res.redirect(`/catways/show/${catway.catwayNumber}`);
     } catch (err) {
-        const reservation = await Reservations.findById(id).catch(() => null);
-        return res.status(500).render("dashboard/edit", {
-            title: "Modifier réservation",
+        const catway = await Catways.findOne({ catwayNumber }).catch(() => null);
+        return res.status(500).render("catways/edit", {
+            title: "Modifier catway",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            reservation,
+            catway,
             error: "Erreur serveur lors de la mise à jour",
         });
     }
 });
 
-// DELETE /dashboard/reservations/:id -> supprime une réservation puis redirige vers /dashboard
-router.delete("/reservations/:id", optionalAuth, requireAuth, async (req, res) => {
-    const { id } = req.params;
+// DELETE /catways/delete/:catwayNumber -> supprime un catway puis redirige vers /catways
+router.delete("/delete/:catwayNumber", optionalAuth, requireAuth, async (req, res) => {
+    const catwayNumber = Number(req.params.catwayNumber);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).render("dashboard/index", {
-            title: "Dashboard",
+    if (Number.isNaN(catwayNumber) || catwayNumber <= 0) {
+        return res.status(400).render("catways/index", {
+            title: "Catways",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            today: new Date(),
-            reservations: await Reservations.find().sort({ startDate: 1 }).catch(() => []),
-            error: "ID réservation invalide",
+            catways: await Catways.find().sort({ catwayNumber: 1 }).catch(() => []),
+            error: "catwayNumber invalide (doit être un nombre positif)",
         });
     }
 
     try {
-        const result = await Reservations.deleteOne({ _id: id });
+        const result = await Catways.deleteOne({ catwayNumber });
 
         if (result.deletedCount === 0) {
-            // Rien supprimé -> réservation introuvable
-            return res.status(404).render("dashboard/index", {
-                title: "Dashboard",
+            return res.status(404).render("catways/index", {
+                title: "Catways",
                 isAuthenticated: req.isAuthenticated,
                 user: req.user || null,
-                today: new Date(),
-                reservations: await Reservations.find().sort({ startDate: 1 }).catch(() => []),
-                error: "Réservation introuvable",
+                catways: await Catways.find().sort({ catwayNumber: 1 }).catch(() => []),
+                error: "Catway introuvable",
             });
         }
 
-        return res.redirect("/dashboard");
+        return res.redirect("/catways");
     } catch (err) {
-        return res.status(500).render("dashboard/index", {
-            title: "Dashboard",
+        return res.status(500).render("catways/index", {
+            title: "Catways",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            today: new Date(),
-            reservations: await Reservations.find().sort({ startDate: 1 }).catch(() => []),
+            catways: await Catways.find().sort({ catwayNumber: 1 }).catch(() => []),
             error: "Erreur serveur lors de la suppression",
         });
     }
 });
+
 
 
 module.exports = router;

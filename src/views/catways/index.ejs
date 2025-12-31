@@ -39,11 +39,11 @@
                                     <td>
                                         <%= c.catwayState %>
                                     </td>
-                                    <td><a href="/dashboard/show/<%= c.catwayNumber %>">Voir</a></td>
-                                    <td><a href="/dashboard/edit/<%= c.catwayNumber %>">✏️ Modifier</a>
+                                    <td><a href="/catways/show/<%= c.catwayNumber %>">Voir</a></td>
+                                    <td><a href="/catways/edit/<%= c.catwayNumber %>">✏️ Modifier</a>
                                     </td>
                                     <td>
-                                        <form action="/dashboard/reservations/<%= c.catwayNumber %>?_method=DELETE" method="POST"
+                                        <form action="/catways/delete/<%= c.catwayNumber %>?_method=DELETE" method="POST"
                                             style="display:inline;">
                                             <button type="submit"
                                                 onclick="return confirm('Supprimer ce catway ?')">
@@ -56,5 +56,5 @@
                         </tbody>
                     </table>
                     <% } %>
-                        <p><a href="/dashboard/add">➕ Ajouter un catway</a></p>
+                        <p><a href="/catways/add">➕ Ajouter un catway</a></p>
 </section>
