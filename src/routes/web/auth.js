@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const authService = require('../../services/users'); // là où tu as exports.logout
+const authService = require('../../services/users');
 const usersService = require('../../services/users');
 const optionalAuth = require('../../middlewares/optionalAuth');
 

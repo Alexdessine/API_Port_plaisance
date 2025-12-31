@@ -243,7 +243,7 @@ router.patch("/edit/:catwayNumber", optionalAuth, requireAuth, async (req, res) 
         catway.catwayState = catwayState.trim();
         await catway.save();
 
-        // redirige vers ta page show
+        // redirige vers la page show
         return res.redirect(`/catways/show/${catway.catwayNumber}`);
     } catch (err) {
         const catway = await Catways.findOne({ catwayNumber }).catch(() => null);
