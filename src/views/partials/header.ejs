@@ -1,0 +1,16 @@
+<header>
+    <nav>
+        <a href="/">Accueil</a>
+        
+        <% if (isAuthenticated) { %>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/catways">Catways</a>
+            <a href="/reservations">Réservations</a>
+            <a href="/users">Utilisateurs</a>
+            <a href="/auth/logout">Se déconnecter</a>
+            <% } %>
+
+        <a href="/api-docs" target="_blank">📚 Documentation API (Swagger)</a>
+    </nav>
+    <hr />
+</header>
