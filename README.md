@@ -107,9 +107,11 @@ Ces fichiers sont fournis avec le devoir et doivent être importés dans la base
 4. Créer les collections :
    - `catways`
    - `reservations`
+   - `user`
 5. Importer :
    - `catways.json` dans la collection `catways`
    - `reservations.json` dans la collection `reservations`
+   - `user.json` dans la collection `user`
 
 
 ### Import via mongoimport (ligne de commande)
@@ -119,6 +121,7 @@ Depuis la racine du projet :
 ```bash
 mongoimport --db port-russell --collection catways --file catways.json --jsonArray
 mongoimport --db port-russell --collection reservations --file reservations.json --jsonArray
+mongoimport --db port-russell --collection user --file user.json --jsonArray
 ```
 
 
