@@ -57,7 +57,6 @@ public
    ┗ style.css
 ```
 
-
 ## ⚙️ Prérequis
 
 * Node.js ≥ 18
@@ -84,7 +83,53 @@ MONGO_URI=mongodb://127.0.0.1:27017/port_russell
 SECRET_KEY=dev_secret_key
 </span></code></div></div></pre>
 
+
+
 ---
+
+
+
+## 📦 Données initiales (MongoDB)
+
+Le projet fournit deux fichiers JSON permettant d’initialiser la base de données MongoDB :
+
+- `catways.json`
+- `reservations.json`
+
+Ces fichiers sont fournis avec le devoir et doivent être importés dans la base MongoDB avant utilisation de l’application.
+
+
+### Import via MongoDB Compass
+
+1. Ouvrir MongoDB Compass
+2. Se connecter à MongoDB (ex : `mongodb://127.0.0.1:27017`)
+3. Créer une base de données nommée : `port-russell`
+4. Créer les collections :
+   - `catways`
+   - `reservations`
+5. Importer :
+   - `catways.json` dans la collection `catways`
+   - `reservations.json` dans la collection `reservations`
+
+
+### Import via mongoimport (ligne de commande)
+
+Depuis la racine du projet :
+
+```bash
+mongoimport --db port-russell --collection catways --file catways.json --jsonArray
+mongoimport --db port-russell --collection reservations --file reservations.json --jsonArray
+```
+
+
+📌 Prérequis :
+
+* MongoDB installé
+* `mongoimport` disponible dans le PATH
+
+---
+
+
 
 ## ▶️ Lancement du projet (local)
 
@@ -107,7 +152,6 @@ Application disponible sur :
 
 <pre class="overflow-visible! px-0!" data-start="1822" data-end="1851"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre!"><span><span>http:</span><span>//localhost:3000</span><span>
 </span></span></code></div></div></pre>
-
 
 ## 👤 Compte de démonstration
 
