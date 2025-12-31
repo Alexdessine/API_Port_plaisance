@@ -1,0 +1,48 @@
+<nav>
+    <a href="/dashboard">← Retour au dashboard</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Détail de l’utilisateur</h1>
+
+<% if (error) { %>
+    <p style="color:red;">
+        <%= error %>
+    </p>
+    <% } %>
+
+        <% if (!userData) { %>
+            <p>Aucun utilisateur à afficher.</p>
+            <% } else { %>
+
+                <section>
+                    <h2>Informations générales</h2>
+
+                    <ul>
+                        <li>
+                            <strong>Nom d'utilisateur :</strong>
+                            <%= userData.username %>
+                        </li>
+                        <li>
+                            <strong>Email :</strong>
+                            <%= userData.email %>
+                        </li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Actions</h2>
+
+                    <a href="/users/<%= userData.email %>?edit=true">✏️ Modifier</a>
+
+                    <form action="/users/<%= userData.email %>?_method=DELETE" method="POST" style="display:inline;">
+                        <button type="submit" onclick="return confirm('Supprimer cet utilisateur ?')">
+                            🗑️ Supprimer
+                        </button>
+                    </form>
+
+                    <a href="/users">Retour</a>
+                </section>
+
+                <% } %>

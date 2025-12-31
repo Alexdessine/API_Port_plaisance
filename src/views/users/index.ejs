@@ -1,0 +1,69 @@
+<nav>
+    <a href="/">Accueil</a>
+    <a href="/catways">Catways</a>
+    <a href="/users">Liste des utilisateurs</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Liste des utilisateurs</h1>
+
+<section>
+
+    <% if (typeof error !=='undefined' && error) { %>
+        <p style="color:red;">
+            <%= error %>
+        </p>
+        <% } %>
+
+            <% if (!users || users.length===0) { %>
+                <p>Aucun utilisateur enregistré.</p>
+                <% } else { %>
+
+                    <table border="1" cellpadding="6" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Nom</th>
+                                <th colspan="3">Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% users.forEach(u=> { %>
+                                <tr>
+                                    <td>
+                                        <%= u.email %>
+                                    </td>
+                                    <td>
+                                        <%= u.username || "-" %>
+                                    </td>
+
+                                    <td>
+                                        <a href="/users/<%= u.email %>">Voir</a>
+                                    </td>
+
+                                    <td>
+                                        <a href="/users/<%= u.email %>?edit=true">✏️ Modifier</a>
+                                    </td>
+
+                                    <td>
+                                        <form action="/users/<%= u.email %>?_method=DELETE" method="POST"
+                                            style="display:inline;">
+                                            <button type="submit"
+                                                onclick="return confirm('Supprimer cet utilisateur ?')">
+                                                🗑️ Supprimer
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+
+                    <% } %>
+
+                        <p>
+                            <a href="/users/add">➕ Ajouter un utilisateur</a>
+                        </p>
+
+</section>

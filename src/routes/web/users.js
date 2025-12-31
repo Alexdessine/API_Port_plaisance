@@ -1,135 +1,178 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const optionalAuth = require('../../middlewares/optionalAuth');
-const requireAuth = require('../../middlewares/requireAuth');
+const optionalAuth = require("../../middlewares/optionalAuth");
+const requireAuth = require("../../middlewares/requireAuth");
 
-const Reservations = require('../../models/reservation');
-const mongoose = require("mongoose");
+const Users = require("../../models/user"); // <-- ajuste le chemin/nom si besoin
+const bcrypt = require("bcrypt");
 
-router.get('/', optionalAuth, requireAuth, async (req, res) => {
+// petite aide: validation email (simple)
+function isValidEmail(email) {
+    if (typeof email !== "string") return false;
+    const e = email.trim().toLowerCase();
+    // regex simple, suffisante pour un devoir (sans prétendre être parfaite)
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+}
+
+// GET /users/ -> liste des users
+router.get("/", optionalAuth, requireAuth, async (req, res) => {
     try {
-        const now = new Date();
+        const users = await Users.find().sort({ email: 1 });
 
-        const reservations = await Reservations.find().sort({ startDate: 1 });
-
-        return res.render('dashboard/index', {
-            title: 'Dashboard',
+        return res.render("users/index", {
+            title: "Utilisateurs",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            today: now,
-            reservations,
+            users,
             error: null,
         });
     } catch (err) {
-        return res.status(500).render('dashboard/index', {
-            title: 'Dashboard',
+        return res.status(500).render("users/index", {
+            title: "Utilisateurs",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            today: new Date(),
-            reservations: [],
-            error: "Erreur serveur lors du chargement des réservations",
+            users: [],
+            error: "Erreur serveur lors du chargement des utilisateurs",
         });
     }
 });
 
-// GET /dashboard/add -> formulaire d'ajout d'une réservation
+// GET /users/add -> formulaire d'ajout (DOIT être avant "/:email")
 router.get("/add", optionalAuth, requireAuth, (req, res) => {
-    return res.render("dashboard/add", {
-        title: "Ajouter une réservation",
+    return res.render("users/add", {
+        title: "Ajouter un utilisateur",
         isAuthenticated: req.isAuthenticated,
         user: req.user || null,
         error: null,
-        form: {
-            catwayNumber: "",
-            clientName: "",
-            boatName: "",
-            startDate: "",
-            endDate: "",
-        },
+        form: { username: "", email: "" },
     });
 });
 
-// POST /dashboard/reservations -> création d'une réservation
-router.post("/reservations", optionalAuth, requireAuth, async (req, res) => {
-    const { catwayNumber, clientName, boatName, startDate, endDate } = req.body;
+// GET /users/:email -> détail d'un user
+// GET /users/:email -> détail OU formulaire d'édition via ?edit=true
+router.get("/:email", optionalAuth, requireAuth, async (req, res) => {
+    try {
+        const email = (req.params.email || "").trim().toLowerCase();
+        const isEdit = String(req.query.edit || "").toLowerCase() === "true";
 
-    const form = { catwayNumber, clientName, boatName, startDate, endDate };
+        if (!isValidEmail(email)) {
+            return res.status(400).render(isEdit ? "users/edit" : "users/show", {
+                title: isEdit ? "Modifier utilisateur" : "Détail utilisateur",
+                isAuthenticated: req.isAuthenticated,
+                user: req.user || null,
+                userData: null,
+                error: "Email invalide",
+                form: isEdit ? { username: "", email } : undefined,
+            });
+        }
 
-    const num = Number(catwayNumber);
-    if (Number.isNaN(num)) {
-        return res.status(400).render("dashboard/add", {
-            title: "Ajouter une réservation",
+        const userData = await Users.findOne({ email });
+
+        if (!userData) {
+            return res.status(404).render(isEdit ? "users/edit" : "users/show", {
+                title: isEdit ? "Modifier utilisateur" : "Détail utilisateur",
+                isAuthenticated: req.isAuthenticated,
+                user: req.user || null,
+                userData: null,
+                error: "Utilisateur introuvable",
+                form: isEdit ? { username: "", email } : undefined,
+            });
+        }
+
+        if (isEdit) {
+            return res.render("users/edit", {
+                title: "Modifier utilisateur",
+                isAuthenticated: req.isAuthenticated,
+                user: req.user || null,
+                userData,
+                error: null,
+                form: { username: userData.username || "", email: userData.email },
+            });
+        }
+
+        return res.render("users/show", {
+            title: "Détail utilisateur",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            error: "catwayNumber doit être un nombre",
+            userData,
+            error: null,
+        });
+    } catch (err) {
+        const isEdit = String(req.query.edit || "").toLowerCase() === "true";
+        return res.status(500).render(isEdit ? "users/edit" : "users/show", {
+            title: isEdit ? "Modifier utilisateur" : "Détail utilisateur",
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            userData: null,
+            error: "Erreur serveur lors du chargement de l'utilisateur",
+            form: isEdit ? { username: "", email: "" } : undefined,
+        });
+    }
+});
+
+
+// POST /users/ -> création d'un user
+router.post("/", optionalAuth, requireAuth, async (req, res) => {
+    // adapte ces champs à TON schéma
+    const { username, email, password } = req.body;
+    const form = { username: username || "", email: email || "" };
+
+    const normalizedEmail = (email || "").trim().toLowerCase();
+
+    if (!username || typeof username !== "string" || username.trim() === "") {
+        return res.status(400).render("users/add", {
+            title: "Ajouter un utilisateur",
+            isAuthenticated: req.isAuthenticated,
+            user: req.user || null,
+            error: "Le nom est obligatoire",
             form,
         });
     }
 
-    if (!clientName || !boatName || !startDate || !endDate) {
-        return res.status(400).render("dashboard/add", {
-            title: "Ajouter une réservation",
+    if (!isValidEmail(normalizedEmail)) {
+        return res.status(400).render("users/add", {
+            title: "Ajouter un utilisateur",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            error: "Tous les champs sont obligatoires",
+            error: "Email invalide",
             form,
         });
     }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-        return res.status(400).render("dashboard/add", {
-            title: "Ajouter une réservation",
+    if (!password || typeof password !== "string" || password.length < 6) {
+        return res.status(400).render("users/add", {
+            title: "Ajouter un utilisateur",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            error: "Dates invalides (ex: 2025-02-12)",
-            form,
-        });
-    }
-
-    if (end < start) {
-        return res.status(400).render("dashboard/add", {
-            title: "Ajouter une réservation",
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            error: "La date de fin doit être après la date de début",
+            error: "Mot de passe invalide (min 6 caractères)",
             form,
         });
     }
 
     try {
-        // chevauchement si existing.startDate <= newEnd ET existing.endDate >= newStart
-        const overlap = await Reservations.findOne({
-            catwayNumber: num,
-            startDate: { $lte: end },
-            endDate: { $gte: start },
+        const hashed = await bcrypt.hash(password, 10);
+
+        const created = await Users.create({
+            username: username.trim(),
+            email: normalizedEmail,
+            password: hashed, // adapte si ton champ s'appelle autrement
         });
 
-        if (overlap) {
-            return res.status(409).render("dashboard/add", {
-                title: "Ajouter une réservation",
+        return res.redirect(`/users/${created.email}`);
+    } catch (err) {
+        if (err?.code === 11000) {
+            return res.status(409).render("users/add", {
+                title: "Ajouter un utilisateur",
                 isAuthenticated: req.isAuthenticated,
                 user: req.user || null,
-                error: "Conflit : une réservation existe déjà sur cette période pour ce catway",
+                error: "Cet email est déjà utilisé",
                 form,
             });
         }
 
-        const created = await Reservations.create({
-            catwayNumber: num,
-            clientName,
-            boatName,
-            startDate: start,
-            endDate: end,
-        });
-
-        return res.redirect(`/dashboard/show/${created._id}`);
-    } catch (err) {
-        return res.status(500).render("dashboard/add", {
-            title: "Ajouter une réservation",
+        return res.status(500).render("users/add", {
+            title: "Ajouter un utilisateur",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
             error: "Erreur serveur lors de la création",
@@ -138,223 +181,127 @@ router.post("/reservations", optionalAuth, requireAuth, async (req, res) => {
     }
 });
 
+// PUT /users/:email -> mise à jour d'un user
+// PUT /users/:email -> mise à jour d'un user (username + password optionnel)
+router.put("/:email", optionalAuth, requireAuth, async (req, res) => {
+    const email = (req.params.email || "").trim().toLowerCase();
 
-// GET /dashboard / show /: id -> affiche le détail d'une réservation
-router.get('/show/:id', optionalAuth, requireAuth, async (req, res) => {
-    try {
-        const reservation = await Reservations.findById(req.params.id);
-
-        if (!reservation) {
-            return res.status(404).render('dashboard/show', {
-                title: 'Détail réservation',
-                isAuthenticated: req.isAuthenticated,
-                user: req.user || null,
-                reservation: null,
-                error: "Réservation introuvable",
-            });
-        }
-
-        return res.render('dashboard/show', {
-            title: 'Détail réservation',
+    if (!isValidEmail(email)) {
+        return res.status(400).render("users/edit", {
+            title: "Modifier utilisateur",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            reservation,
-            error: null,
-        });
-    } catch (err) {
-        return res.status(500).render('dashboard/show', {
-            title: 'Détail réservation',
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            reservation: null,
-            error: "Erreur serveur lors du chargement de la réservation",
-        });
-    }
-});
-
-
-// GET /dashboard/edit/:id -> formulaire d'édition d'une réservation
-router.get('/edit/:id', optionalAuth, requireAuth, async (req, res) => {
-    try {
-        const reservation = await Reservations.findById(req.params.id);
-
-        if (!reservation) {
-            return res.status(404).render('dashboard/edit', {
-                title: 'Modifier la réservation',
-                isAuthenticated: req.isAuthenticated,
-                user: req.user || null,
-                reservation: null,
-                error: 'Réservation introuvable',
-            });
-        }
-
-        return res.render('dashboard/edit', {
-            title: 'Modifier la réservation',
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            reservation,
-            error: null,
-        });
-    } catch (err) {
-        return res.status(500).render('dashboard/edit', {
-            title: 'Modifier la réservation',
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            reservation: null,
-            error: 'Erreur serveur lors du chargement de la réservation',
-        });
-    }
-});
-
-// GET /dashboard/edit/:id -> envoie du formulaire formulaire d'édition d'une réservation
-router.patch("/reservations/:id", optionalAuth, requireAuth, async (req, res) => {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).render("dashboard/edit", {
-            title: "Modifier réservation",
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            reservation: null,
-            error: "ID réservation invalide",
+            userData: null,
+            error: "Email invalide",
+            form: { username: req.body?.username || "", email },
         });
     }
 
-    // champs autorisés à la modification
-    const { clientName, boatName, startDate, endDate } = req.body;
+    const username =
+        typeof req.body.username === "string" ? req.body.username.trim() : "";
+    const password =
+        typeof req.body.password === "string" ? req.body.password : "";
 
-    if (!clientName || !boatName || !startDate || !endDate) {
-        // On recharge la réservation pour ré-afficher le formulaire
-        const reservation = await Reservations.findById(id).catch(() => null);
-        return res.status(400).render("dashboard/edit", {
-            title: "Modifier réservation",
+    // username obligatoire (si tu veux le rendre optionnel, dis-le et je t'adapte)
+    if (!username) {
+        const userData = await Users.findOne({ email }).catch(() => null);
+        return res.status(400).render("users/edit", {
+            title: "Modifier utilisateur",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            reservation,
-            error: "Tous les champs sont obligatoires",
+            userData,
+            error: "Le username est obligatoire",
+            form: { username, email },
         });
     }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-        const reservation = await Reservations.findById(id).catch(() => null);
-        return res.status(400).render("dashboard/edit", {
-            title: "Modifier réservation",
+    // password optionnel : si vide -> on ne change pas
+    if (password && password.length < 6) {
+        const userData = await Users.findOne({ email }).catch(() => null);
+        return res.status(400).render("users/edit", {
+            title: "Modifier utilisateur",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            reservation,
-            error: "Dates invalides (ex: 2025-02-12)",
-        });
-    }
-
-    if (end < start) {
-        const reservation = await Reservations.findById(id).catch(() => null);
-        return res.status(400).render("dashboard/edit", {
-            title: "Modifier réservation",
-            isAuthenticated: req.isAuthenticated,
-            user: req.user || null,
-            reservation,
-            error: "La date de fin doit être après la date de début",
+            userData,
+            error: "Mot de passe invalide (min 6 caractères)",
+            form: { username, email },
         });
     }
 
     try {
-        // 1) récupérer la réservation actuelle (pour connaître catwayNumber)
-        const current = await Reservations.findById(id);
-        if (!current) {
-            return res.status(404).render("dashboard/edit", {
-                title: "Modifier réservation",
+        const userData = await Users.findOne({ email });
+
+        if (!userData) {
+            return res.status(404).render("users/edit", {
+                title: "Modifier utilisateur",
                 isAuthenticated: req.isAuthenticated,
                 user: req.user || null,
-                reservation: null,
-                error: "Réservation introuvable",
+                userData: null,
+                error: "Utilisateur introuvable",
+                form: { username, email },
             });
         }
 
-        // 2) vérifier chevauchement sur le même catway, en excluant la réservation courante
-        const overlap = await Reservations.findOne({
-            _id: { $ne: current._id },
-            catwayNumber: current.catwayNumber,
-            startDate: { $lte: end },
-            endDate: { $gte: start },
-        });
+        userData.username = username;
 
-        if (overlap) {
-            return res.status(409).render("dashboard/edit", {
-                title: "Modifier réservation",
-                isAuthenticated: req.isAuthenticated,
-                user: req.user || null,
-                reservation: current,
-                error: "Conflit : une autre réservation existe déjà sur cette période pour ce catway",
-            });
+        if (password) {
+            userData.password = await bcrypt.hash(password, 10);
         }
 
-        // 3) appliquer update
-        current.clientName = clientName;
-        current.boatName = boatName;
-        current.startDate = start;
-        current.endDate = end;
+        await userData.save();
 
-        await current.save();
-
-        // 4) redirection vers la page show (à adapter selon ton routing)
-        return res.redirect(`/dashboard/show/${current._id}`);
+        return res.redirect(`/users/${userData.email}`);
     } catch (err) {
-        const reservation = await Reservations.findById(id).catch(() => null);
-        return res.status(500).render("dashboard/edit", {
-            title: "Modifier réservation",
+        const userData = await Users.findOne({ email }).catch(() => null);
+        return res.status(500).render("users/edit", {
+            title: "Modifier utilisateur",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            reservation,
+            userData,
             error: "Erreur serveur lors de la mise à jour",
+            form: { username, email },
         });
     }
 });
 
-// DELETE /dashboard/reservations/:id -> supprime une réservation puis redirige vers /dashboard
-router.delete("/reservations/:id", optionalAuth, requireAuth, async (req, res) => {
-    const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).render("dashboard/index", {
-            title: "Dashboard",
+// DELETE /users/:email -> suppression d'un user
+router.delete("/:email", optionalAuth, requireAuth, async (req, res) => {
+    const email = (req.params.email || "").trim().toLowerCase();
+
+    if (!isValidEmail(email)) {
+        return res.status(400).render("users/index", {
+            title: "Utilisateurs",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            today: new Date(),
-            reservations: await Reservations.find().sort({ startDate: 1 }).catch(() => []),
-            error: "ID réservation invalide",
+            users: await Users.find().sort({ email: 1 }).catch(() => []),
+            error: "Email invalide",
         });
     }
 
     try {
-        const result = await Reservations.deleteOne({ _id: id });
+        const result = await Users.deleteOne({ email });
 
         if (result.deletedCount === 0) {
-            // Rien supprimé -> réservation introuvable
-            return res.status(404).render("dashboard/index", {
-                title: "Dashboard",
+            return res.status(404).render("users/index", {
+                title: "Utilisateurs",
                 isAuthenticated: req.isAuthenticated,
                 user: req.user || null,
-                today: new Date(),
-                reservations: await Reservations.find().sort({ startDate: 1 }).catch(() => []),
-                error: "Réservation introuvable",
+                users: await Users.find().sort({ email: 1 }).catch(() => []),
+                error: "Utilisateur introuvable",
             });
         }
 
-        return res.redirect("/dashboard");
+        return res.redirect("/users");
     } catch (err) {
-        return res.status(500).render("dashboard/index", {
-            title: "Dashboard",
+        return res.status(500).render("users/index", {
+            title: "Utilisateurs",
             isAuthenticated: req.isAuthenticated,
             user: req.user || null,
-            today: new Date(),
-            reservations: await Reservations.find().sort({ startDate: 1 }).catch(() => []),
+            users: await Users.find().sort({ email: 1 }).catch(() => []),
             error: "Erreur serveur lors de la suppression",
         });
     }
 });
-
 
 module.exports = router;

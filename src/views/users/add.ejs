@@ -1,0 +1,35 @@
+<nav>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/api-docs" target="_blank">Documentation API</a>
+    <a href="/auth/logout">Se déconnecter</a>
+</nav>
+
+<h1>Ajouter un utilisateur</h1>
+
+<% if (error) { %>
+    <p style="color:red;">
+        <%= error %>
+    </p>
+    <% } %>
+
+        <form action="/users" method="POST">
+
+            <div>
+                <label>Nom d'utilisateur</label><br />
+                <input type="text" name="username" value="<%= form?.username ?? '' %>" required />
+            </div>
+
+            <div>
+                <label>Email</label><br />
+                <input type="email" name="email" value="<%= form?.email ?? '' %>" required />
+            </div>
+
+            <div>
+                <label>Mot de passe</label><br />
+                <input type="password" name="password" required />
+            </div>
+
+            <button type="submit">Créer</button>
+            <a href="/users">Annuler</a>
+
+        </form>
