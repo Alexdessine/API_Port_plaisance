@@ -121,16 +121,16 @@ exports.authenticate = async (req, res) => {
         const user = await User.findOne({ email: email });
 
         if (!user) {
-            return res.status(404).render('login', { error: 'Utilisateur introuvable' });
+            return res.status(404).render('/?error=', { error: 'Utilisateur introuvable' });
         }
 
         bcrypt.compare(password, user.password, function (err, ok) {
             if (err) {
-                return res.status(500).render('login', { error: 'Erreur serveur' });
+                return res.status(500).render('index', { error: 'Erreur serveur' });
             }
 
             if (!ok) {
-                return res.status(403).render('login', { error: 'Identifiants incorrects' });
+                return res.status(403).render('index', { error: 'Identifiants incorrects' });
             }
 
             const loginAt = new Date().toISOString();
@@ -150,7 +150,7 @@ exports.authenticate = async (req, res) => {
             return res.redirect('/dashboard');
         });
     } catch (error) {
-        return res.status(500).render('login', { error: 'Erreur serveur' });
+        return res.status(500).render('index', { error: 'Erreur serveur' });
     }
 };
 
